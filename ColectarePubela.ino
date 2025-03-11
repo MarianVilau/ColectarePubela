@@ -1,10 +1,3 @@
-/**
- * RFID Tag Reader with API Integration
- * 
- * This application reads RFID tags using an RC522 module connected to a NodeMCU ESP8266
- * and sends the tag ID to a web API.
- */
-
 #include "defines.h"
 #include "RfidReader.h"
 #include "ApiClient.h"

@@ -1,9 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-// WiFi credentials
-#define WIFI_SSID "OMiLAB"
-#define WIFI_PASSWORD "digifofulbs"
+#include "WifiConfig.h"
 
 // API configuration
 #define API_ENDPOINT "http://10.14.11.141:3000/api/data"
