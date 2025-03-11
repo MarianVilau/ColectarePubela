@@ -10,8 +10,13 @@
 #define USER_NAME "Marian Vilau"
 
 // Pin definitions
-#define RST_PIN D3  // GPIO0
-#define SS_PIN  D4  // GPIO2
+#ifdef ESP32
+  #define RST_PIN 21  // GPIO21
+  #define SS_PIN  5   // GPIO05
+#elif defined(ESP8266)
+  #define RST_PIN D3  // GPIO0
+  #define SS_PIN  D4  // GPIO2
+#endif
 
 // Other constants
 #define SERIAL_BAUD_RATE 9600

@@ -1,8 +1,14 @@
 #ifndef API_CLIENT_H
 #define API_CLIENT_H
 
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
+#ifdef ESP32
+    #include <WiFi.h>
+    #include <HTTPClient.h>
+#else
+    #include <ESP8266WiFi.h>
+    #include <ESP8266HTTPClient.h>
+#endif
+
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 #include "defines.h"
@@ -46,7 +52,7 @@ public:
     }
 
     // Send data to API
-    bool sendTagData(const String& tagId) {
+    bool sendTagData(const String &tagId) {
         // Check WiFi connection
         if (!isConnected()) {
             Serial.println("WiFi not connected!");
