@@ -1,8 +1,0 @@
-#ifndef COLECTAREPUBELA_WIFICONFIG_H
-#define COLECTAREPUBELA_WIFICONFIG_H
-
-// WiFi credentials
-#define WIFI_SSID     "OMiLAB"
-#define WIFI_PASSWORD "digifofulbs"
-
-#endif //COLECTAREPUBELA_WIFICONFIG_H
