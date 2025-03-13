@@ -5,8 +5,8 @@ using MMsWebApp.Models;
 
 namespace MMsWebApp.Controllers
 {
-    [Route("/api/data")]
     [ApiController]
+    [Route("api/data")]
     public class ColectariController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -16,25 +16,24 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostNodeData([FromBody] Colectari colectari)
+    [HttpPost]
+    public IActionResult PostColectari([FromBody] Colectari colectari)
+    {
+        if (colectari == null)
         {
-            if (colectari == null)
-            {
-                return BadRequest();
-            }
-
-            _context.Colectari.Add(colectari);
-            await _context.SaveChangesAsync();
-
-            return Ok(colectari);
+            return BadRequest();
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Colectari>>> GetColectari()
-        {
-            return await _context.Colectari.ToListAsync();
-        }
+        _context.Colectari.Add(colectari);
+        _context.SaveChanges();
+
+        return Ok(colectari);
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Colectari>>> GetColectari()
+    {
+        return await _context.Colectari.ToListAsync();
+    }
+}
 }
