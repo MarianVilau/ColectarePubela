@@ -5,7 +5,7 @@
 
 // API configuration
 #define ID_COLECTARI "2"
-#define COLECTED_ADD "2023-10-10T10:00:00"
+#define COLECTED_AT "2023-10-10T10:00:00"
 
 // Pin definitions
 #ifdef ESP32
