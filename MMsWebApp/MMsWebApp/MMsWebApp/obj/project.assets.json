@@ -3110,23 +3110,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\User\\.nuget\\packages\\": {},
+    "C:\\Users\\bajan\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\ISM4\\Microcontrollere\\proiect\\ColectarePubela\\MMsWebApp\\MMsWebApp\\MMsWebApp\\MMsWebApp.csproj",
+      "projectUniqueName": "D:\\an4\\sem2\\Microcontrolle\\PROIECT\\ColectarePubela\\MMsWebApp\\MMsWebApp\\MMsWebApp\\MMsWebApp.csproj",
       "projectName": "MMsWebApp",
-      "projectPath": "D:\\ISM4\\Microcontrollere\\proiect\\ColectarePubela\\MMsWebApp\\MMsWebApp\\MMsWebApp\\MMsWebApp.csproj",
-      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "D:\\ISM4\\Microcontrollere\\proiect\\ColectarePubela\\MMsWebApp\\MMsWebApp\\MMsWebApp\\obj\\",
+      "projectPath": "D:\\an4\\sem2\\Microcontrolle\\PROIECT\\ColectarePubela\\MMsWebApp\\MMsWebApp\\MMsWebApp\\MMsWebApp.csproj",
+      "packagesPath": "C:\\Users\\bajan\\.nuget\\packages\\",
+      "outputPath": "D:\\an4\\sem2\\Microcontrolle\\PROIECT\\ColectarePubela\\MMsWebApp\\MMsWebApp\\MMsWebApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\bajan\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

@@ -17,21 +17,21 @@ namespace MMsWebApp.Controllers
         }
 
     [HttpPost]
-    public IActionResult PostColectari([FromBody] Colectari colectari)
+    public IActionResult PostColectari([FromBody] Colectare colectare)
     {
-        if (colectari == null)
+        if (colectare == null)
         {
             return BadRequest();
         }
 
-        _context.Colectari.Add(colectari);
+        _context.Colectari.Add(colectare);
         _context.SaveChanges();
 
-        return Ok(colectari);
+        return Ok(colectare);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Colectari>>> GetColectari()
+    public async Task<ActionResult<IEnumerable<Colectare>>> GetColectari()
     {
         return await _context.Colectari.ToListAsync();
     }

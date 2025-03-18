@@ -1,10 +1,10 @@
 ﻿namespace MMsWebApp.Models
 {
-    public class Colectari
+    public class Colectare
     {
         public int Id { get; set; }
         public required string IdPubela { get; set; }
-        public DateTime ColectedAdd { get; set; }
+        public DateTime CollectedAt { get; set; }
         
     }
 }
