@@ -73,7 +73,7 @@ public:
         StaticJsonDocument<200> jsonDoc;
         jsonDoc["Id"] = ID_COLECTARI;
         jsonDoc["IdPubela"] = tagId;
-        jsonDoc["ColectedAt"] = COLECTED_AT;
+        jsonDoc["CollectedAt"] = COLLECTED_AT;
         Serial.println("JSON document created");
 
         // Serialize JSON to string
