@@ -3,4 +3,4 @@ bin/
 obj/
 
 # User-specific files
-.vs/
+/.vs/
