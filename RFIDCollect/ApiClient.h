@@ -3,7 +3,7 @@
 
 #ifdef ESP32
 #include <WiFi.h>
-    #include <HTTPClient.h>
+#include <HTTPClient.h>
 #else
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
@@ -12,16 +12,25 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 #include "defines.h"
+#include "time.h"
 
 class ApiClient {
 private:
-    WiFiClient client;
+    WiFiClient client; ///< WiFi client for HTTP communication
+    const char* ntpServer = "pool.ntp.org"; ///< NTP server address
+    long gmtOffset_sec = 0; ///< GMT offset in seconds
+    int daylightOffset_sec = 3600; ///< Daylight saving time offset in seconds
 
 public:
-    // Constructor
+    /**
+     * @brief Constructor for the ApiClient class.
+     */
     ApiClient() {}
 
-    // Connect to WiFi
+    /**
+     * @brief Connect to the WiFi network.
+     * @return True if connected successfully, false otherwise.
+     */
     bool connectToWiFi() {
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
         Serial.print("Connecting to WiFi");
@@ -46,57 +55,89 @@ public:
         return true;
     }
 
-    // Check WiFi connection
+    /**
+     * @brief Check if the device is connected to WiFi.
+     * @return True if connected, false otherwise.
+     */
     bool isConnected() {
         return WiFi.status() == WL_CONNECTED;
     }
 
-    // Send data to API
+    /**
+     * @brief Initialize time synchronization with the NTP server.
+     */
+    void initTime() {
+        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+        Serial.println("Time synchronization initialized");
+    }
+
+    /**
+     * @brief Get the current time as a formatted string.
+     * @return Formatted time string in ISO 8601 format
+     */
+    String getFormattedTime() {
+        struct tm timeinfo;
+        if (!getLocalTime(&timeinfo)) {
+            Serial.println("Failed to obtain time");
+            return "Failed to obtain time";
+        }
+        char timeString[25];
+        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+        return String(timeString);
+    }
+
+    /**
+     * @brief Print detailed time information to the serial monitor.
+     */
+    void printLocalTime() {
+        struct tm timeinfo;
+        if (!getLocalTime(&timeinfo)) {
+            Serial.println("Failed to obtain time");
+            return;
+        }
+        char timeString[25];
+        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+        Serial.println(timeString);
+    }
+
+    /**
+     * @brief Send RFID tag data to the API endpoint.
+     * @param tagId The ID of the RFID tag to send.
+     * @return True if the data was sent successfully, false otherwise.
+     */
     bool sendTagData(const String &tagId) {
-        // Check WiFi connection
         if (!isConnected()) {
-            Serial.println("WiFi not connected!");
+            Serial.println("Not connected to WiFi");
             return false;
         }
 
         HTTPClient http;
+        String serverPath = String(API_ENDPOINT) + "/tags";
+        http.begin(client, serverPath);
 
-        Serial.print("Connecting to API...");
-        if (!http.begin(client, API_ENDPOINT)) {
-            Serial.println("Failed to connect to API endpoint");
-            return false;
-        }
         http.addHeader("Content-Type", "application/json");
-        Serial.println("Connected to API");
 
-        // Create JSON document
-        StaticJsonDocument<200> jsonDoc;
-        jsonDoc["Id"] = ID_COLECTARI;
-        jsonDoc["IdPubela"] = tagId;
-        jsonDoc["CollectedAt"] = COLLECTED_AT;
-        Serial.println("JSON document created");
+        DynamicJsonDocument jsonDoc(1024);
+        jsonDoc["id_colectari"] = ID_COLECTARI;
+        jsonDoc["tag_id"] = tagId;
+        jsonDoc["timestamp"] = getFormattedTime();
 
-        // Serialize JSON to string
-        String jsonString;
-        serializeJson(jsonDoc, jsonString);
-        Serial.println("JSON serialized: " + jsonString);
+        String requestBody;
+        serializeJson(jsonDoc, requestBody);
 
-        // Send POST request
-        int httpResponseCode = http.POST(jsonString);
-        Serial.println("POST request sent");
+        int httpResponseCode = http.POST(requestBody);
 
         if (httpResponseCode > 0) {
             String response = http.getString();
-            Serial.println("HTTP Response code: " + String(httpResponseCode));
-            Serial.println("Response: " + response);
-            http.end();
-            return true;
+            Serial.println(httpResponseCode);
+            Serial.println(response);
         } else {
-            Serial.println("Error on sending POST: " + String(httpResponseCode));
-            Serial.println("Error message: " + http.errorToString(httpResponseCode));
-            http.end();
-            return false;
+            Serial.print("Error on sending POST: ");
+            Serial.println(httpResponseCode);
         }
+
+        http.end();
+        return httpResponseCode == HTTP_CODE_OK;
     }
 };
 
