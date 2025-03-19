@@ -17,13 +17,13 @@ namespace MMsWebApp.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
 
-            modelBuilder.Entity("MMsWebApp.Models.Colectari", b =>
+            modelBuilder.Entity("MMsWebApp.Models.Colectare", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("ColectedAdd")
+                    b.Property<DateTime>("CollectedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("IdPubela")

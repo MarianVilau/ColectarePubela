@@ -12,16 +12,23 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 #include "defines.h"
+#include "NTPClient.h"
 
 class ApiClient {
 private:
-    WiFiClient client;
+    WiFiClient client; ///< WiFi client for HTTP communication
+    NTPClient ntpClient; ///< NTP client for time synchronization
 
 public:
-    // Constructor
+    /**
+     * @brief Constructor for the ApiClient class.
+     */
     ApiClient() {}
 
-    // Connect to WiFi
+    /**
+     * @brief Connect to the WiFi network.
+     * @return True if connected successfully, false otherwise.
+     */
     bool connectToWiFi() {
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
         Serial.print("Connecting to WiFi");
@@ -46,12 +53,26 @@ public:
         return true;
     }
 
-    // Check WiFi connection
+    /**
+     * @brief Check if the device is connected to WiFi.
+     * @return True if connected, false otherwise.
+     */
     bool isConnected() {
         return WiFi.status() == WL_CONNECTED;
     }
 
-    // Send data to API
+    /**
+     * @brief Initialize time synchronization with the NTP server.
+     */
+    void initTime() {
+        ntpClient.initTime();
+    }
+
+    /**
+     * @brief Send RFID tag data to the API endpoint.
+     * @param tagId The ID of the RFID tag to send.
+     * @return True if the data was sent successfully, false otherwise.
+     */
     bool sendTagData(const String &tagId) {
         // Check WiFi connection
         if (!isConnected()) {
@@ -61,21 +82,31 @@ public:
 
         HTTPClient http;
 
-        Serial.print("Connecting to API...");
-        http.begin(client, API_ENDPOINT);
+        String serverPath = String(API_ENDPOINT);
+        Serial.print("Connecting to API at: ");
+        Serial.println(serverPath);
+
+        if (!http.begin(client, serverPath)) {
+            Serial.println("Failed to connect to API endpoint");
+            return false;
+        }
         http.addHeader("Content-Type", "application/json");
+        Serial.println("Connected to API");
 
         // Create JSON document
         StaticJsonDocument<200> jsonDoc;
-        jsonDoc["id"] = tagId;
-        jsonDoc["name"] = USER_NAME;
+        jsonDoc["IdPubela"] = tagId;
+        jsonDoc["CollectedAt"] = ntpClient.getFormattedTime();
+        Serial.println("JSON document created");
 
         // Serialize JSON to string
         String jsonString;
         serializeJson(jsonDoc, jsonString);
+        Serial.println("JSON serialized: " + jsonString);
 
         // Send POST request
         int httpResponseCode = http.POST(jsonString);
+        Serial.println("POST request sent");
 
         if (httpResponseCode > 0) {
             String response = http.getString();
@@ -85,6 +116,7 @@ public:
             return true;
         } else {
             Serial.println("Error on sending POST: " + String(httpResponseCode));
+            Serial.println("Error message: " + http.errorToString(httpResponseCode));
             http.end();
             return false;
         }

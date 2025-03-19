@@ -10,8 +10,6 @@ namespace MMsWebApp.Data
         {
         }
 
-        public DbSet<Colectari> Colectari { get; set; }
+        public DbSet<Colectare> Colectari { get; set; }
     }
-
-
 }

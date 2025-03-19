@@ -4,8 +4,7 @@
 #include "WifiConfig.h"
 
 // API configuration
-#define API_ENDPOINT "http://10.14.11.141:3000/api/data"
-#define USER_NAME "Marian Vilau"
+#define ID_COLECTARI "9"
 
 // Pin definitions
 #ifdef ESP32

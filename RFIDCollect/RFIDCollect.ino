@@ -16,13 +16,14 @@ void setup() {
   Serial.println("\n\nRFID to API Integration");
   Serial.println("------------------------");
   
-  // Initialize RFID reader
-  rfidReader.begin();
-  
   // Connect to WiFi
   if (!apiClient.connectToWiFi()) {
     Serial.println("Failed to connect to WiFi. Check credentials or router.");
   }
+  //Initialize NTP client
+  apiClient.initTime();
+  // Initialize RFID reader
+  rfidReader.begin();
 }
 
 void loop() {
