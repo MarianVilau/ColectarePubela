@@ -4,7 +4,7 @@
 #include "WifiConfig.h"
 
 // API configuration
-#define ID_COLECTARI "8"
+#define ID_COLECTARI "9"
 
 // Pin definitions
 #ifdef ESP32

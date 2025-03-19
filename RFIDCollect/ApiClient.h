@@ -2,24 +2,22 @@
 #define API_CLIENT_H
 
 #ifdef ESP32
-#include <WiFi.h>
-#include <HTTPClient.h>
+    #include <WiFi.h>
+    #include <HTTPClient.h>
 #else
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
+    #include <ESP8266WiFi.h>
+    #include <ESP8266HTTPClient.h>
 #endif
 
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 #include "defines.h"
-#include "time.h"
+#include "NTPClient.h"
 
 class ApiClient {
 private:
     WiFiClient client; ///< WiFi client for HTTP communication
-    const char* ntpServer = "pool.ntp.org"; ///< NTP server address
-    long gmtOffset_sec = 0; ///< GMT offset in seconds
-    int daylightOffset_sec = 3600; ///< Daylight saving time offset in seconds
+    NTPClient ntpClient; ///< NTP client for time synchronization
 
 public:
     /**
@@ -67,37 +65,7 @@ public:
      * @brief Initialize time synchronization with the NTP server.
      */
     void initTime() {
-        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-        Serial.println("Time synchronization initialized");
-    }
-
-    /**
-     * @brief Get the current time as a formatted string.
-     * @return Formatted time string in ISO 8601 format
-     */
-    String getFormattedTime() {
-        struct tm timeinfo;
-        if (!getLocalTime(&timeinfo)) {
-            Serial.println("Failed to obtain time");
-            return "Failed to obtain time";
-        }
-        char timeString[25];
-        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%S", &timeinfo);
-        return String(timeString);
-    }
-
-    /**
-     * @brief Print detailed time information to the serial monitor.
-     */
-    void printLocalTime() {
-        struct tm timeinfo;
-        if (!getLocalTime(&timeinfo)) {
-            Serial.println("Failed to obtain time");
-            return;
-        }
-        char timeString[25];
-        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%S", &timeinfo);
-        Serial.println(timeString);
+        ntpClient.initTime();
     }
 
     /**
@@ -129,7 +97,7 @@ public:
         StaticJsonDocument<200> jsonDoc;
         jsonDoc["Id"] = ID_COLECTARI;
         jsonDoc["IdPubela"] = tagId;
-        jsonDoc["CollectedAt"] = getFormattedTime();
+        jsonDoc["CollectedAt"] = ntpClient.getFormattedTime();
         Serial.println("JSON document created");
 
         // Serialize JSON to string
