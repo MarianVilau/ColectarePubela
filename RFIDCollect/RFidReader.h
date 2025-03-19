@@ -1,3 +1,10 @@
+/**
+ * @file RFidReader.h
+ * @brief RFID reader class for reading RFID tags.
+ *
+ * This class provides functionality to initialize the RFID reader, read RFID tags, and reset the last read tag.
+ */
+
 #ifndef RFID_READER_H
 #define RFID_READER_H
 
@@ -5,12 +12,21 @@
 #include <MFRC522.h>
 #include "defines.h"
 
+/**
+ * @class RfidReader
+ * @brief Class for reading RFID tags using the MFRC522 module.
+ */
 class RfidReader {
 private:
-    MFRC522 rfid;
-    String lastReadTagId;
+    MFRC522 rfid; ///< MFRC522 instance for RFID communication
+    String lastReadTagId; ///< Stores the last read tag ID
 
-    // Convert UID bytes to a string
+    /**
+     * @brief Convert UID bytes to a string.
+     * @param buffer Pointer to the UID buffer
+     * @param bufferSize Size of the UID buffer
+     * @return String representation of the UID
+     */
     String getTagIdAsString(byte *buffer, byte bufferSize) {
         String id = "";
         for (byte i = 0; i < bufferSize; i++) {
@@ -24,10 +40,16 @@ private:
     }
 
 public:
-    // Constructor
+    /**
+     * @brief Constructor for the RfidReader class.
+     */
     RfidReader() : rfid(SS_PIN, RST_PIN), lastReadTagId("") {}
 
-    // Initialize the RFID reader
+    /**
+     * @brief Initialize the RFID reader.
+     *
+     * This function initializes the SPI communication and the MFRC522 module.
+     */
     void begin() {
         SPI.begin();
         rfid.PCD_Init();
@@ -35,7 +57,10 @@ public:
         Serial.println("Waiting for tag...");
     }
 
-    // Check for a new tag and return its ID if found (empty string if no new tag)
+    /**
+     * @brief Check for a new tag and return its ID if found.
+     * @return String representation of the tag ID (empty string if no new tag)
+     */
     String readTag() {
         // Look for new cards
         if (!rfid.PICC_IsNewCardPresent()) {
@@ -72,7 +97,11 @@ public:
         return tagId;
     }
 
-    // Reset the last read tag (useful after some time has passed)
+    /**
+     * @brief Reset the last read tag.
+     *
+     * This function resets the last read tag ID, allowing the same tag to be read again.
+     */
     void resetLastTag() {
         lastReadTagId = "";
     }

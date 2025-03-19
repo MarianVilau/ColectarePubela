@@ -16,21 +16,30 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-    [HttpPost]
-    public IActionResult PostColectari([FromBody] Colectare colectare)
-    {
-        if (colectare == null)
+        [HttpPost]
+        public IActionResult PostColectari([FromBody] Colectare colectare)
         {
-            return BadRequest();
+            if (colectare == null)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                _context.Colectari.Add(colectare);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the exception details
+                Console.WriteLine($"An error occurred while saving the entity changes: {ex.InnerException?.Message}");
+                return StatusCode(500, "An error occurred while saving the entity changes.");
+            }
+
+            return Ok(colectare);
         }
 
-        _context.Colectari.Add(colectare);
-        _context.SaveChanges();
-
-        return Ok(colectare);
-    }
-
-    [HttpGet]
+        [HttpGet]
     public async Task<ActionResult<IEnumerable<Colectare>>> GetColectari()
     {
         return await _context.Colectari.ToListAsync();

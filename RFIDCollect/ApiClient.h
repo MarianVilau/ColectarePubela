@@ -82,7 +82,7 @@ public:
             return "Failed to obtain time";
         }
         char timeString[25];
-        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%S", &timeinfo);
         return String(timeString);
     }
 
@@ -96,7 +96,7 @@ public:
             return;
         }
         char timeString[25];
-        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+        strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%S", &timeinfo);
         Serial.println(timeString);
     }
 
@@ -106,38 +106,53 @@ public:
      * @return True if the data was sent successfully, false otherwise.
      */
     bool sendTagData(const String &tagId) {
+        // Check WiFi connection
         if (!isConnected()) {
-            Serial.println("Not connected to WiFi");
+            Serial.println("WiFi not connected!");
             return false;
         }
 
         HTTPClient http;
-        String serverPath = String(API_ENDPOINT) + "/tags";
-        http.begin(client, serverPath);
 
+        String serverPath = String(API_ENDPOINT);
+        Serial.print("Connecting to API at: ");
+        Serial.println(serverPath);
+
+        if (!http.begin(client, serverPath)) {
+            Serial.println("Failed to connect to API endpoint");
+            return false;
+        }
         http.addHeader("Content-Type", "application/json");
+        Serial.println("Connected to API");
 
-        DynamicJsonDocument jsonDoc(1024);
-        jsonDoc["id_colectari"] = ID_COLECTARI;
-        jsonDoc["tag_id"] = tagId;
-        jsonDoc["timestamp"] = getFormattedTime();
+        // Create JSON document
+        StaticJsonDocument<200> jsonDoc;
+        jsonDoc["Id"] = ID_COLECTARI;
+        jsonDoc["IdPubela"] = tagId;
+        jsonDoc["CollectedAt"] = getFormattedTime();
+        Serial.println("JSON document created");
 
-        String requestBody;
-        serializeJson(jsonDoc, requestBody);
+        // Serialize JSON to string
+        String jsonString;
+        serializeJson(jsonDoc, jsonString);
+        Serial.println("JSON serialized: " + jsonString);
 
-        int httpResponseCode = http.POST(requestBody);
+        // Send POST request
+        int httpResponseCode = http.POST(jsonString);
+        Serial.println("POST request sent");
 
         if (httpResponseCode > 0) {
             String response = http.getString();
-            Serial.println(httpResponseCode);
-            Serial.println(response);
+            Serial.println("HTTP Response code: " + String(httpResponseCode));
+            Serial.println("Response: " + response);
+            http.end();
+            return true;
         } else {
-            Serial.print("Error on sending POST: ");
-            Serial.println(httpResponseCode);
+            Serial.println("Error on sending POST: " + String(httpResponseCode));
+            Serial.println("Error message: " + http.errorToString(httpResponseCode));
+            http.end();
+            return false;
         }
-
-        http.end();
-        return httpResponseCode == HTTP_CODE_OK;
     }
 };
 
