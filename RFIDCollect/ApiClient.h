@@ -95,7 +95,6 @@ public:
 
         // Create JSON document
         StaticJsonDocument<200> jsonDoc;
-        jsonDoc["Id"] = ID_COLECTARI;
         jsonDoc["IdPubela"] = tagId;
         jsonDoc["CollectedAt"] = ntpClient.getFormattedTime();
         Serial.println("JSON document created");

@@ -40,9 +40,9 @@ namespace MMsWebApp.Controllers
         }
 
         [HttpGet]
-    public async Task<ActionResult<IEnumerable<Colectare>>> GetColectari()
-    {
-        return await _context.Colectari.ToListAsync();
+        public async Task<ActionResult<IEnumerable<Colectare>>> GetColectari()
+        {
+            return await _context.Colectari.ToListAsync();
+        }
     }
-}
 }

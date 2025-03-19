@@ -12,6 +12,4 @@ namespace MMsWebApp.Data
 
         public DbSet<Colectare> Colectari { get; set; }
     }
-
-
 }
