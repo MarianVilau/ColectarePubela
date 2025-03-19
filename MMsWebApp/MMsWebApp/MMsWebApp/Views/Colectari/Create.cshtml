@@ -1,0 +1,35 @@
+﻿@page
+@model MMsWebApp.Views.Colectari.CreateModel
+@{
+    ViewData["Title"] = "Create Colectare";
+}
+
+<h1>Create Colectare</h1>
+
+<h4>Colectare</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Colectare.IdPubela" class="control-label"></label>
+                <input asp-for="Colectare.IdPubela" class="form-control" />
+                <span asp-validation-for="Colectare.IdPubela" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Colectare.CollectedAt" class="control-label"></label>
+                <input asp-for="Colectare.CollectedAt" class="form-control" />
+                <span asp-validation-for="Colectare.CollectedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

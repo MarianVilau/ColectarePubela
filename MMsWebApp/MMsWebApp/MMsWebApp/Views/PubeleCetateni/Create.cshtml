@@ -1,0 +1,40 @@
+﻿@page
+@model MMsWebApp.Views.PubeleCetateni.CreateModel
+@{
+    ViewData["Title"] = "Create PubelaCetatean";
+}
+
+<h1>Create PubelaCetatean</h1>
+
+<h4>PubelaCetatean</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label asp-for="PubelaCetatean.PubelaId" class="control-label"></label>
+                <input asp-for="PubelaCetatean.PubelaId" class="form-control" />
+                <span asp-validation-for="PubelaCetatean.PubelaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PubelaCetatean.CetateanId" class="control-label"></label>
+                <input asp-for="PubelaCetatean.CetateanId" class="form-control" />
+                <span asp-validation-for="PubelaCetatean.CetateanId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PubelaCetatean.Adresa" class="control-label"></label>
+                <input asp-for="PubelaCetatean.Adresa" class="form-control" />
+                <span asp-validation-for="PubelaCetatean.Adresa" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
