@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
 
 namespace MMsWebApp.Controllers
 {
+    [ApiController]
+    [Route("api/data")]
     public class ColectariController : Controller
     {
         private readonly AppDbContext _context;
@@ -13,27 +16,42 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult Create()
-        {
-            var model = new Colectare
-            {
-                IdPubela = "0", // Initialize the required property with a string value
-                CollectedAt = DateTime.Now // Initialize the required property
-            };
-            return View(model);
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(Colectare colectare)
         {
-            if (ModelState.IsValid)
+            if (colectare == null)
+            {
+                return BadRequest();
+            }
+
+            try
             {
                 _context.Colectari.Add(colectare);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
             }
-            return View(colectare);
+            catch (DbUpdateException ex)
+            {
+                // Log the exception details
+                Console.WriteLine($"An error occurred while saving the entity changes: {ex.InnerException?.Message}");
+                return StatusCode(500, "An error occurred while saving the entity changes.");
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var colectari = await _context.Colectari.ToListAsync();
+            var viewModel = new ColectariViewModel
+            {
+                Colectari = colectari,
+                NewColectare = new Colectare
+                {
+                    IdPubela = string.Empty // Initialize the required property
+                }
+            };
+            return View(viewModel);
         }
     }
 }
