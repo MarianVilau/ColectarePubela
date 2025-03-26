@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MMsWebApp.Controllers
 {
-    [ApiController]
-    [Route("api/cetateni")]
-    public class CetateniController : ControllerBase
+    public class CetateniController : Controller
     {
         private readonly AppDbContext _context;
 
@@ -16,86 +14,36 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public IActionResult PostCetatean([FromBody] Cetatean cetatean)
+        [HttpGet]
+        public IActionResult Create()
         {
-            if (cetatean == null)
+            var model = new Cetatean
             {
-                return BadRequest();
-            }
+                Nume = string.Empty, 
+                Prenume = string.Empty, 
+                Email = string.Empty,
+                CNP = string.Empty 
+            };
+            return View(model);
+        }
 
-            if (_context.Cetateni.Any(c => c.CNP == cetatean.CNP))
+        [HttpPost]
+        public async Task<IActionResult> Create(Cetatean cetatean)
+        {
+            if (ModelState.IsValid)
             {
-                return Conflict("A citizen with this CNP already exists.");
+                _context.Cetateni.Add(cetatean);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
-
-            _context.Cetateni.Add(cetatean);
-            _context.SaveChanges();
-
-            return Ok(cetatean);
+            return View(cetatean);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cetatean>>> GetCetateni()
+        public async Task<IActionResult> Index()
         {
-            return await _context.Cetateni.ToListAsync();
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Cetatean>> GetCetatean(int id)
-        {
-            var cetatean = await _context.Cetateni.FindAsync(id);
-
-            if (cetatean == null)
-            {
-                return NotFound();
-            }
-
-            return cetatean;
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCetatean(int id, [FromBody] Cetatean cetatean)
-        {
-            if (id != cetatean.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(cetatean).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Cetateni.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCetatean(int id)
-        {
-            var cetatean = await _context.Cetateni.FindAsync(id);
-            if (cetatean == null)
-            {
-                return NotFound();
-            }
-
-            _context.Cetateni.Remove(cetatean);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var cetateni = await _context.Cetateni.ToListAsync();
+            return View(cetateni);
         }
     }
 }

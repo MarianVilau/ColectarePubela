@@ -1,5 +1,4 @@
-﻿@page
-@model MMsWebApp.Views.Colectari.CreateModel
+﻿@model MMsWebApp.Models.Colectare
 @{
     ViewData["Title"] = "Create Colectare";
 }
@@ -12,14 +11,14 @@
     <div class="col-md-4">
         <form method="post">
             <div class="form-group">
-                <label asp-for="Colectare.IdPubela" class="control-label"></label>
-                <input asp-for="Colectare.IdPubela" class="form-control" />
-                <span asp-validation-for="Colectare.IdPubela" class="text-danger"></span>
+                <label asp-for="IdPubela" class="control-label"></label>
+                <input asp-for="IdPubela" class="form-control" />
+                <span asp-validation-for="IdPubela" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Colectare.CollectedAt" class="control-label"></label>
-                <input asp-for="Colectare.CollectedAt" class="form-control" />
-                <span asp-validation-for="Colectare.CollectedAt" class="text-danger"></span>
+                <label asp-for="CollectedAt" class="control-label"></label>
+                <input asp-for="CollectedAt" class="form-control" />
+                <span asp-validation-for="CollectedAt" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

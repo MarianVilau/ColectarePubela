@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
 
 namespace MMsWebApp.Controllers
 {
-    [ApiController]
-    [Route("api/data")]
-    public class ColectariController : ControllerBase
+    public class ColectariController : Controller
     {
         private readonly AppDbContext _context;
 
@@ -16,33 +13,27 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public IActionResult PostColectari([FromBody] Colectare colectare)
+        [HttpGet]
+        public IActionResult Create()
         {
-            if (colectare == null)
+            var model = new Colectare
             {
-                return BadRequest();
-            }
-
-            try
-            {
-                _context.Colectari.Add(colectare);
-                _context.SaveChanges();
-            }
-            catch (DbUpdateException ex)
-            {
-                // Log the exception details
-                Console.WriteLine($"An error occurred while saving the entity changes: {ex.InnerException?.Message}");
-                return StatusCode(500, "An error occurred while saving the entity changes.");
-            }
-
-            return Ok(colectare);
+                IdPubela = "0", // Initialize the required property with a string value
+                CollectedAt = DateTime.Now // Initialize the required property
+            };
+            return View(model);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Colectare>>> GetColectari()
+        [HttpPost]
+        public async Task<IActionResult> Create(Colectare colectare)
         {
-            return await _context.Colectari.ToListAsync();
+            if (ModelState.IsValid)
+            {
+                _context.Colectari.Add(colectare);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return View(colectare);
         }
     }
 }

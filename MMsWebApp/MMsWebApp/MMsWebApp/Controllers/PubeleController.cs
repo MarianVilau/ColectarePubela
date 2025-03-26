@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
 
 namespace MMsWebApp.Controllers
 {
-    [ApiController]
-    [Route("api/pubele")]
-    public class PubeleController : ControllerBase
+    public class PubeleController : Controller
     {
         private readonly AppDbContext _context;
 
@@ -16,86 +13,23 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        // Adaugă o pubelă
-        [HttpPost]
-        public IActionResult PostPubela([FromBody] Pubela pubela)
-        {
-            if (pubela == null)
-            {
-                return BadRequest();
-            }
-
-            _context.Pubele.Add(pubela);
-            _context.SaveChanges();
-
-            return Ok(pubela);
-        }
-
-        // Obține toate pubelele
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Pubela>>> GetPubele()
+        public IActionResult Create()
         {
-            return await _context.Pubele.ToListAsync();
+            var model = new Pubela(); // Inițializează modelul
+            return View(model);
         }
 
-        // Obține o pubelă după ID
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Pubela>> GetPubela(int id)
+        [HttpPost]
+        public async Task<IActionResult> Create(Pubela pubela)
         {
-            var pubela = await _context.Pubele.FindAsync(id);
-
-            if (pubela == null)
+            if (ModelState.IsValid)
             {
-                return NotFound();
-            }
-
-            return pubela;
-        }
-
-        // Modifică o pubelă existentă
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPubela(int id, [FromBody] Pubela pubela)
-        {
-            if (id != pubela.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(pubela).State = EntityState.Modified;
-
-            try
-            {
+                _context.Pubele.Add(pubela);
                 await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Pubele.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // Șterge o pubelă
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePubela(int id)
-        {
-            var pubela = await _context.Pubele.FindAsync(id);
-            if (pubela == null)
-            {
-                return NotFound();
-            }
-
-            _context.Pubele.Remove(pubela);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return View(pubela);
         }
     }
 }

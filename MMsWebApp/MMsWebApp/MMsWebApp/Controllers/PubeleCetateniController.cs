@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
 
 namespace MMsWebApp.Controllers
 {
-    [ApiController]
-    [Route("api/pubele_cetateni")]
-    public class PubeleCetateniController : ControllerBase
+    public class PubeleCetateniController : Controller
     {
         private readonly AppDbContext _context;
 
@@ -16,81 +13,26 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public IActionResult PostPubelaCetatean([FromBody] PubelaCetatean pubelaCetatean)
-        {
-            if (pubelaCetatean == null)
-            {
-                return BadRequest();
-            }
-
-            _context.PubeleCetateni.Add(pubelaCetatean);
-            _context.SaveChanges();
-
-            return Ok(pubelaCetatean);
-        }
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PubelaCetatean>>> GetPubeleCetateni()
+        public IActionResult Create()
         {
-            return await _context.PubeleCetateni.ToListAsync();
+            var model = new PubelaCetatean
+            {
+                Adresa = string.Empty // Initialize the required property
+            };
+            return View(model);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PubelaCetatean>> GetPubelaCetatean(int id)
+        [HttpPost]
+        public async Task<IActionResult> Create(PubelaCetatean pubelaCetatean)
         {
-            var pubelaCetatean = await _context.PubeleCetateni.FindAsync(id);
-
-            if (pubelaCetatean == null)
+            if (ModelState.IsValid)
             {
-                return NotFound();
-            }
-
-            return pubelaCetatean;
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPubelaCetatean(int id, [FromBody] PubelaCetatean pubelaCetatean)
-        {
-            if (id != pubelaCetatean.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(pubelaCetatean).State = EntityState.Modified;
-
-            try
-            {
+                _context.PubeleCetateni.Add(pubelaCetatean);
                 await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.PubeleCetateni.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePubelaCetatean(int id)
-        {
-            var pubelaCetatean = await _context.PubeleCetateni.FindAsync(id);
-            if (pubelaCetatean == null)
-            {
-                return NotFound();
-            }
-
-            _context.PubeleCetateni.Remove(pubelaCetatean);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return View(pubelaCetatean);
         }
     }
 }

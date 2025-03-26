@@ -1,8 +1,6 @@
-﻿@page
-@model MMsWebApp.Views.Cetateni.CreateModel
+﻿@model MMsWebApp.Models.Cetatean
 @{
     ViewData["Title"] = "Create Cetatean";
-
 }
 
 <h1>Create Cetatean</h1>
@@ -13,29 +11,29 @@
     <div class="col-md-4">
         <form method="post">
             <div class="form-group">
-                <label asp-for="Cetatean.Id" class="control-label"></label>
-                <input asp-for="Cetatean.Id" class="form-control" />
-                <span asp-validation-for="Cetatean.Id" class="text-danger"></span>
+                <label asp-for="Id" class="control-label"></label>
+                <input asp-for="Id" class="form-control" />
+                <span asp-validation-for="Id" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Cetatean.Nume" class="control-label"></label>
-                <input asp-for="Cetatean.Nume" class="form-control" />
-                <span asp-validation-for="Cetatean.Nume" class="text-danger"></span>
+                <label asp-for="Nume" class="control-label"></label>
+                <input asp-for="Nume" class="form-control" />
+                <span asp-validation-for="Nume" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Cetatean.Prenume" class="control-label"></label>
-                <input asp-for="Cetatean.Prenume" class="form-control" />
-                <span asp-validation-for="Cetatean.Prenume" class="text-danger"></span>
+                <label asp-for="Prenume" class="control-label"></label>
+                <input asp-for="Prenume" class="form-control" />
+                <span asp-validation-for="Prenume" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Cetatean.Email" class="control-label"></label>
-                <input asp-for="Cetatean.Email" class="form-control" />
-                <span asp-validation-for="Cetatean.Email" class="text-danger"></span>
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Cetatean.CNP" class="control-label"></label>
-                <input asp-for="Cetatean.CNP" class="form-control" />
-                <span asp-validation-for="Cetatean.CNP" class="text-danger"></span>
+                <label asp-for="CNP" class="control-label"></label>
+                <input asp-for="CNP" class="form-control" />
+                <span asp-validation-for="CNP" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
