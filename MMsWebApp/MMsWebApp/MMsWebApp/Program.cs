@@ -1,18 +1,44 @@
 using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
+using MMsWebApp.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Listen on all network interfaces
 builder.WebHost.UseUrls("http://0.0.0.0:5138");
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Add logging
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+});
+
+// Add CORS if needed
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowESP", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
+
+// Adăugați după builder.Build() și înainte de app.Run()
+if (app.Environment.IsDevelopment())
+{
+    await SeedInitialData(app.Services);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -21,6 +47,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
@@ -31,3 +58,48 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+// Adăugați această metodă la sfârșitul fișierului
+static async Task SeedInitialData(IServiceProvider services)
+{
+    using var scope = services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Verificăm dacă avem deja date
+    if (!context.Pubele.Any())
+    {
+        // Adăugăm câteva pubele de test
+        var pubele = new List<Pubela>
+        {
+            new Pubela { Id = "4307062F", Tip = "Plastic" },
+            new Pubela { Id = "4307063A", Tip = "Hartie" },
+            new Pubela { Id = "4307064B", Tip = "Sticla" }
+        };
+        context.Pubele.AddRange(pubele);
+        await context.SaveChangesAsync();
+    }
+
+    if (!context.Cetateni.Any())
+    {
+        // Adăugăm câțiva cetățeni de test
+        var cetateni = new List<Cetatean>
+        {
+            new Cetatean 
+            { 
+                Nume = "Popescu",
+                Prenume = "Ion",
+                Email = "ion.popescu@example.com",
+                CNP = "1234567890123"
+            },
+            new Cetatean 
+            { 
+                Nume = "Ionescu",
+                Prenume = "Maria",
+                Email = "maria.ionescu@example.com",
+                CNP = "2234567890123"
+            }
+        };
+        context.Cetateni.AddRange(cetateni);
+        await context.SaveChangesAsync();
+    }
+}

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
 
-namespace MMsWebApp.Views.Colectari
+namespace MMsWebApp.Views.Cetateni
 {
     public class CreateModel : PageModel
     {
@@ -12,10 +12,16 @@ namespace MMsWebApp.Views.Colectari
         public CreateModel(AppDbContext context)
         {
             _context = context;
+            Cetatean = new Cetatean
+            {
+                Nume = string.Empty,
+                Prenume = string.Empty,
+                Email = string.Empty,
+                CNP = string.Empty
+            };
         }
 
-        [BindProperty]
-        public Colectare Colectare { get; set; }
+        public Cetatean Cetatean { get; set; }
 
         public IActionResult OnGet()
         {
@@ -29,7 +35,7 @@ namespace MMsWebApp.Views.Colectari
                 return Page();
             }
 
-            _context.Colectari.Add(Colectare);
+            _context.Cetateni.Add(Cetatean);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");

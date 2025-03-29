@@ -16,7 +16,11 @@ namespace MMsWebApp.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            var model = new Pubela(); // Inițializează modelul
+            var model = new Pubela
+            {
+                Id = string.Empty,
+                Tip = string.Empty
+            };
             return View(model);
         }
 

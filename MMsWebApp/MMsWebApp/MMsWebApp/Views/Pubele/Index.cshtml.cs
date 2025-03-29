@@ -13,6 +13,11 @@ namespace MMsWebApp.Views.Pubele
         public CreateModel(AppDbContext context)
         {
             _context = context;
+            Pubela = new Pubela
+            {
+                Id = string.Empty,
+                Tip = string.Empty
+            };
         }
 
         [BindProperty]

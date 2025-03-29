@@ -57,16 +57,26 @@ namespace MMsWebApp.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PubelaId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("IdPubela");
+
+                    b.HasIndex("PubelaId");
 
                     b.ToTable("Colectari");
                 });
 
             modelBuilder.Entity("MMsWebApp.Models.Pubela", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tip")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -86,12 +96,63 @@ namespace MMsWebApp.Migrations
                     b.Property<int>("CetateanId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PubelaId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PubelaId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CetateanId");
+
+                    b.HasIndex("PubelaId");
+
                     b.ToTable("PubeleCetateni");
+                });
+
+            modelBuilder.Entity("MMsWebApp.Models.Colectare", b =>
+                {
+                    b.HasOne("MMsWebApp.Models.Pubela", null)
+                        .WithMany("Colectari")
+                        .HasForeignKey("IdPubela")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MMsWebApp.Models.Pubela", "Pubela")
+                        .WithMany()
+                        .HasForeignKey("PubelaId");
+
+                    b.Navigation("Pubela");
+                });
+
+            modelBuilder.Entity("MMsWebApp.Models.PubelaCetatean", b =>
+                {
+                    b.HasOne("MMsWebApp.Models.Cetatean", "Cetatean")
+                        .WithMany("PubeleCetateni")
+                        .HasForeignKey("CetateanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MMsWebApp.Models.Pubela", "Pubela")
+                        .WithMany("PubeleCetateni")
+                        .HasForeignKey("PubelaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cetatean");
+
+                    b.Navigation("Pubela");
+                });
+
+            modelBuilder.Entity("MMsWebApp.Models.Cetatean", b =>
+                {
+                    b.Navigation("PubeleCetateni");
+                });
+
+            modelBuilder.Entity("MMsWebApp.Models.Pubela", b =>
+                {
+                    b.Navigation("Colectari");
+
+                    b.Navigation("PubeleCetateni");
                 });
 #pragma warning restore 612, 618
         }

@@ -5,5 +5,8 @@
         public int Id { get; set; } // This will be auto-incremented by the database
         public required string IdPubela { get; set; }
         public DateTime CollectedAt { get; set; }
+
+        // Navigation properties
+        public Pubela? Pubela { get; set; }
     }
 }

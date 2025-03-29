@@ -18,8 +18,14 @@ namespace MMsWebApp.Controllers
         {
             var model = new PubelaCetatean
             {
-                Adresa = string.Empty // Initialize the required property
+                PubelaId = string.Empty,
+                CetateanId = 0,
+                Adresa = string.Empty
             };
+
+            ViewBag.Pubele = _context.Pubele.ToList();
+            ViewBag.Cetateni = _context.Cetateni.ToList();
+
             return View(model);
         }
 
@@ -28,10 +34,20 @@ namespace MMsWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.PubeleCetateni.Add(pubelaCetatean);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
+                try
+                {
+                    _context.PubeleCetateni.Add(pubelaCetatean);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception)
+                {
+                    ModelState.AddModelError("", "A apărut o eroare la salvare.");
+                }
             }
+
+            ViewBag.Pubele = _context.Pubele.ToList();
+            ViewBag.Cetateni = _context.Cetateni.ToList();
             return View(pubelaCetatean);
         }
     }

@@ -13,9 +13,14 @@ namespace MMsWebApp.Views.PubeleCetateni
         public CreateModel(AppDbContext context)
         {
             _context = context;
+            PubelaCetatean = new PubelaCetatean
+            {
+                PubelaId = string.Empty,
+                CetateanId = 0,
+                Adresa = string.Empty
+            };
         }
 
-        [BindProperty]
         public PubelaCetatean PubelaCetatean { get; set; }
 
         public IActionResult OnGet()

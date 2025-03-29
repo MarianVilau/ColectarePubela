@@ -9,22 +9,31 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form method="post">
+        <form asp-action="Create">
             <div class="form-group">
-                <label asp-for="PubelaId" class="control-label"></label>
-                <input asp-for="PubelaId" class="form-control" />
+                <label asp-for="PubelaId" class="control-label">Pubelă</label>
+                <select asp-for="PubelaId" class="form-control" 
+                        asp-items="@(new SelectList(ViewBag.Pubele, "Id", "Id"))">
+                    <option value="">-- Selectați pubela --</option>
+                </select>
                 <span asp-validation-for="PubelaId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="CetateanId" class="control-label"></label>
-                <input asp-for="CetateanId" class="form-control" />
+                <label asp-for="CetateanId" class="control-label">Cetățean</label>
+                <select asp-for="CetateanId" class="form-control" 
+                        asp-items="@(new SelectList(ViewBag.Cetateni, "Id", "Nume"))">
+                    <option value="">-- Selectați cetățeanul --</option>
+                </select>
                 <span asp-validation-for="CetateanId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Adresa" class="control-label"></label>
                 <input asp-for="Adresa" class="form-control" />
                 <span asp-validation-for="Adresa" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
