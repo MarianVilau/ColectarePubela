@@ -49,6 +49,25 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com/ https://*.googleapis.com; " +
+        "style-src 'self' 'unsafe-inline' https://unpkg.com/ https://cdn.jsdelivr.net/ https://fonts.googleapis.com https://fonts.gstatic.com; " +
+        "img-src 'self' data: https://*.tile.openstreetmap.org https://unpkg.com/ https://*.googleapis.com https://*.gstatic.com https://*.leafletjs.com; " +
+        "font-src 'self' data: https://cdn.jsdelivr.net/ https://fonts.gstatic.com https://fonts.googleapis.com; " +
+        "connect-src 'self' https://*.tile.openstreetmap.org/ https://*.googleapis.com https://*.leafletjs.com; " +
+        "frame-src 'self'; " +
+        "media-src 'self'; " +
+        "worker-src 'self' blob:; " +
+        "child-src 'self' blob:; " +
+        "object-src 'none'");
+
+    await next();
+});
+
 app.UseRouting();
 app.UseAuthorization();
 
@@ -84,15 +103,15 @@ static async Task SeedInitialData(IServiceProvider services)
         // Adăugăm câțiva cetățeni de test
         var cetateni = new List<Cetatean>
         {
-            new Cetatean 
-            { 
+            new Cetatean
+            {
                 Nume = "Popescu",
                 Prenume = "Ion",
                 Email = "ion.popescu@example.com",
                 CNP = "1234567890123"
             },
-            new Cetatean 
-            { 
+            new Cetatean
+            {
                 Nume = "Ionescu",
                 Prenume = "Maria",
                 Email = "maria.ionescu@example.com",

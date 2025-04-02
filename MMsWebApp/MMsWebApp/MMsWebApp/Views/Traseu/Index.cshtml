@@ -1,0 +1,142 @@
+@model List<MMsWebApp.Models.TraseuPoint>
+
+@{
+    ViewData["Title"] = "Vizualizare Traseu";
+}
+
+<div class="container mt-4">
+    <h2>Vizualizare Traseu</h2>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Error))
+    {
+            <div class="alert alert-danger" role="alert">
+            @ViewBag.Error
+            </div>
+    }
+
+    <div class="alert alert-info" role="alert">
+        <h5>Informații despre date:</h5>
+        <ul>
+            <li>Număr total de linii în fișier: @(ViewBag.TotalLines ?? 0)</li>
+            <li>Număr de puncte procesate: @(ViewBag.PointCount ?? 0)</li>
+            @if (ViewBag.FirstPoint != null)
+            {
+                    <li>Primul punct: 
+                        Mașina @ViewBag.FirstPoint.NrMasina, 
+                        Pubelă @ViewBag.FirstPoint.IdPubela, 
+                        Data @ViewBag.FirstPoint.ColectatLa.ToString("dd/MM/yyyy HH:mm")
+                    </li>
+            }
+            @if (ViewBag.LastPoint != null)
+            {
+                    <li>Ultimul punct: 
+                        Mașina @ViewBag.LastPoint.NrMasina, 
+                        Pubelă @ViewBag.LastPoint.IdPubela, 
+                        Data @ViewBag.LastPoint.ColectatLa.ToString("dd/MM/yyyy HH:mm")
+                    </li>
+            }
+        </ul>
+    </div>
+
+    @if (ViewBag.Debug != null && ((List<string>)ViewBag.Debug).Any())
+    {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#debugInfo">
+                            Informații Debug
+                        </button>
+                    </h5>
+                </div>
+                <div id="debugInfo" class="collapse">
+                    <div class="card-body">
+                        <pre class="debug-log">
+                        @foreach (var message in (List<string>)ViewBag.Debug)
+                        {
+                            @message
+                        }
+                        </pre>
+                    </div>
+                </div>
+            </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+            <div class="route-container">
+            @foreach (var point in Model.OrderBy(p => p.ColectatLa))
+            {
+                        <div class="route-point">
+                            <div class="point-circle"></div>
+                            <div class="route-line"></div>
+                            <div class="point-info">
+                                <strong>Mașina: @point.NrMasina</strong><br>
+                                <strong>Pubelă: @point.IdPubela</strong><br>
+                                <small>@point.Adresa</small><br>
+                                <small>Colectat la: @point.ColectatLa.ToString("dd/MM/yyyy HH:mm")</small><br>
+                                <small>Coordonate: @point.Latitude, @point.Longitude</small>
+                            </div>
+                        </div>
+            }
+            </div>
+    }
+</div>
+
+<style>
+    .route-container {
+        margin: 20px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .route-point {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .point-circle {
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        border-radius: 50%;
+        margin-right: 20px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+    }
+
+    .route-line {
+        position: absolute;
+        left: 10px;
+        top: 20px;
+        bottom: -20px;
+        width: 2px;
+        background-color: #007bff;
+        z-index: 1;
+    }
+
+    .point-info {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        flex-grow: 1;
+        margin-top: -5px;
+    }
+
+    .route-point:last-child .route-line {
+        display: none;
+    }
+
+    .debug-log {
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 0;
+    }
+</style> 
