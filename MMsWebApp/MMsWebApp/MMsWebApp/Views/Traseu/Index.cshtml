@@ -35,6 +35,8 @@
                         Data @ViewBag.LastPoint.ColectatLa.ToString("dd/MM/yyyy HH:mm")
                     </li>
             }
+            <li>Diferența de distanță: @(ViewBag.DistanceDifference ?? 0) km</li>
+            <li>Timpul de parcurgere al traseului optimizat: @(ViewBag.OptimizedTime ?? 0) minute</li>
         </ul>
     </div>
 
