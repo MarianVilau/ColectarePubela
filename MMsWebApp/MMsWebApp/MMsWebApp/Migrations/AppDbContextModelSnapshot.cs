@@ -50,12 +50,21 @@ namespace MMsWebApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Adresa")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CollectedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("IdPubela")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("PubelaId")
                         .HasColumnType("TEXT");

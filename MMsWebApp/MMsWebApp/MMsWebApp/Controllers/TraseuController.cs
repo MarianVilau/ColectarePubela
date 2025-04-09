@@ -9,37 +9,71 @@ using CsvHelper.Configuration;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using MMsWebApp.Data;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 
 namespace MMsWebApp.Controllers
 {
     public class TraseuController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public TraseuController(IHttpClientFactory httpClientFactory)
+        public TraseuController(IHttpClientFactory httpClientFactory, AppDbContext context, IWebHostEnvironment environment)
         {
             _httpClientFactory = httpClientFactory;
+            _context = context;
+            _environment = environment;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DateTime? selectedDate = null)
         {
-            var points = await GetPointsFromCsv("Data/Traseu2.csv");
-            var filteredPoints = points.Where(p => p.ColectatLa.Date == new DateTime(2024, 10, 15)).ToList();
-            var optimizedRoute = await OptimizeRoute(filteredPoints);
+            // If no date is selected, use today's date
+            var date = selectedDate ?? DateTime.Today;
 
-            var originalDistance = CalculateTotalDistance(filteredPoints);
+            // Get all unique dates from the database for the dropdown
+            var availableDates = await _context.Colectari
+                .Select(c => c.CollectedAt.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToListAsync();
+
+            // Get collections for the selected date
+            var collections = await _context.Colectari
+                .Include(c => c.Pubela)
+                .Where(c => c.CollectedAt.Date == date.Date)
+                .OrderBy(c => c.CollectedAt)
+                .ToListAsync();
+
+            // Calculate statistics
+            var points = collections.Select(c => new TraseuPoint
+            {
+                NrMasina = "SB 77 ULB", // Hardcoded for now
+                IdPubela = c.IdPubela,
+                ColectatLa = c.CollectedAt,
+                Adresa = c.Adresa,
+                Latitude = c.Latitude,
+                Longitude = c.Longitude
+            }).ToList();
+
+            var optimizedRoute = await OptimizeRoute(points);
+            var originalDistance = CalculateTotalDistance(points);
             var optimizedDistance = CalculateTotalDistance(optimizedRoute);
             var distanceDifference = originalDistance - optimizedDistance;
             var optimizedTime = optimizedRoute.Count * 1; // 1 minute per collection
 
-            ViewBag.TotalLines = filteredPoints.Count;
-            ViewBag.PointCount = filteredPoints.Count;
-            ViewBag.FirstPoint = filteredPoints.FirstOrDefault();
-            ViewBag.LastPoint = filteredPoints.LastOrDefault();
+            ViewBag.AvailableDates = availableDates;
+            ViewBag.SelectedDate = date;
+            ViewBag.TotalLines = points.Count;
+            ViewBag.PointCount = points.Count;
+            ViewBag.FirstPoint = points.FirstOrDefault();
+            ViewBag.LastPoint = points.LastOrDefault();
             ViewBag.DistanceDifference = distanceDifference;
             ViewBag.OptimizedTime = optimizedTime;
 
-            return View(filteredPoints);
+            return View(points);
         }
 
         private async Task<List<TraseuPoint>> GetPointsFromCsv(string filePath)
@@ -56,9 +90,6 @@ namespace MMsWebApp.Controllers
             }
             return points;
         }
-
-
-
 
         private async Task<List<TraseuPoint>> OptimizeRoute(List<TraseuPoint> points)
         {
@@ -124,6 +155,90 @@ namespace MMsWebApp.Controllers
                 IdPubela = "Unknown",
                 Adresa = address
             };
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Import()
+        {
+            try
+            {
+                var filePath = Path.Combine(_environment.ContentRootPath, "Data", "Traseu2.csv");
+                
+                var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    HasHeaderRecord = true,
+                    Delimiter = ",",
+                    MissingFieldFound = null
+                };
+
+                using (var reader = new StreamReader(filePath))
+                using (var csv = new CsvReader(reader, config))
+                {
+                    var records = csv.GetRecords<TraseuPoint>().ToList();
+                    
+                    // Exclude first and last entry
+                    records = records.Skip(1).Take(records.Count - 2).ToList();
+
+                    // Group records by IdPubela to avoid duplicates
+                    var groupedPubele = records
+                        .Where(r => !string.IsNullOrEmpty(r.IdPubela))
+                        .GroupBy(r => r.IdPubela)
+                        .ToList();
+
+                    // First, create or update all Pubele
+                    foreach (var group in groupedPubele)
+                    {
+                        var pubelaId = group.Key;
+                        var existingPubela = await _context.Pubele
+                            .FirstOrDefaultAsync(p => p.Id == pubelaId);
+
+                        if (existingPubela == null)
+                        {
+                            existingPubela = new Pubela
+                            {
+                                Id = pubelaId,
+                                Tip = "Standard" // Set default type
+                            };
+                            _context.Pubele.Add(existingPubela);
+                            await _context.SaveChangesAsync(); // Save to get the ID
+                        }
+                    }
+
+                    // Then create all Colectari with proper relationships
+                    foreach (var record in records.Where(r => !string.IsNullOrEmpty(r.IdPubela)))
+                    {
+                        var pubela = await _context.Pubele
+                            .Include(p => p.Colectari)
+                            .FirstOrDefaultAsync(p => p.Id == record.IdPubela);
+
+                        if (pubela != null)
+                        {
+                            var colectare = new Colectare
+                            {
+                                IdPubela = record.IdPubela,
+                                CollectedAt = record.ColectatLa,
+                                Adresa = record.Adresa,
+                                Latitude = record.Latitude,
+                                Longitude = record.Longitude,
+                                Pubela = pubela // Set the navigation property
+                            };
+
+                            _context.Colectari.Add(colectare);
+                            pubela.Colectari.Add(colectare); // Add to the navigation collection
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["Message"] = "Import realizat cu succes! Relațiile între tabele au fost create corect.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Eroare la import: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 

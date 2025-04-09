@@ -3,12 +3,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using MMsWebApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Adaugă serviciile necesare
 builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient(); // Adaugă serviciul IHttpClientFactory
+builder.Services.AddHttpClient();
+
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 

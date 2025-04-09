@@ -19,4 +19,8 @@
 		<Folder Include="Views\Traseu\" />
 	</ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\Traseu\Index.cshtml" />
+  </ItemGroup>
+
 </Project>
