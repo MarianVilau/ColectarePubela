@@ -1,0 +1,160 @@
+{
+  "cluster_id": 8,
+  "name": "Zona Strada Lutului",
+  "coordinates": [
+    [
+      24.1342794,
+      45.81020119999999
+    ],
+    [
+      24.1323444,
+      45.8101226
+    ],
+    [
+      24.134878,
+      45.8077405
+    ],
+    [
+      24.135013,
+      45.8078085
+    ],
+    [
+      24.1357133,
+      45.8082777
+    ],
+    [
+      24.1359075,
+      45.8083053
+    ],
+    [
+      24.1362096,
+      45.8083185
+    ],
+    [
+      24.1366285,
+      45.8086542
+    ],
+    [
+      24.1365627,
+      45.8088651
+    ],
+    [
+      24.1369017,
+      45.809074
+    ],
+    [
+      24.1371694,
+      45.8089909
+    ],
+    [
+      24.1371525,
+      45.8091674
+    ],
+    [
+      24.137421,
+      45.80908729999999
+    ],
+    [
+      24.1370736,
+      45.8092318
+    ],
+    [
+      24.1373722,
+      45.8091467
+    ],
+    [
+      24.1372147,
+      45.809268
+    ],
+    [
+      24.1416622,
+      45.8127457
+    ],
+    [
+      24.1377088,
+      45.8095784
+    ],
+    [
+      24.1380444,
+      45.8095422
+    ],
+    [
+      24.1382456,
+      45.809864
+    ],
+    [
+      24.1382699,
+      45.809984
+    ],
+    [
+      24.1388606,
+      45.80829
+    ],
+    [
+      24.1388473,
+      45.8068626
+    ],
+    [
+      24.1388594,
+      45.8070888
+    ],
+    [
+      24.0247875,
+      45.7877059
+    ]
+  ],
+  "addresses": [
+    "Strada Țiglari 101, Sibiu, Romania",
+    "Strada Lacul lui Binder 5, Sibiu, Romania",
+    "Strada Lutului 76, Sibiu, Romania",
+    "Strada Lutului 74, Sibiu, Romania",
+    "Strada Lutului 60, Sibiu, Romania",
+    "Strada Lutului 58, Sibiu, Romania",
+    "Strada Lutului 53, Sibiu, Romania",
+    "Strada Lutului 43 A, Sibiu, Romania",
+    "Strada Lutului 48, Sibiu, Romania",
+    "Strada Lutului 40, Sibiu, Romania",
+    "Strada Lutului 35, Sibiu, Romania",
+    "Strada Lutului 36, Sibiu, Romania",
+    "Strada Lutului 31, Sibiu, Romania",
+    "Strada Lutului 34, Sibiu, Romania",
+    "Strada Lutului 29, Sibiu, Romania",
+    "Strada Lutului 32, Sibiu, Romania",
+    "Strada Ulmului 21, Sibiu, Romania",
+    "Strada Lutului 22, Sibiu, Romania",
+    "Strada Lutului 17, Sibiu, Romania",
+    "Strada Lutului 14, Sibiu, Romania",
+    "Strada Lutului 8, Sibiu, Romania",
+    "Strada Sperantei 5, Sibiu, Romania",
+    "Strada Carpaților 2, Sibiu, Romania",
+    "Strada Carpaților 3 B, Sibiu, Romania",
+    "DN1 FN, Cristian 557085"
+  ],
+  "ids": [
+    "9AA4AE07",
+    "CCDADED1",
+    "8C723AED",
+    "2B5339A3",
+    "ADSB43S4",
+    "5ED6FEB8",
+    "886CE09F",
+    "0CE4B015",
+    "F3774939",
+    "CE849B7D",
+    "C49D1576",
+    "0350CD6D",
+    "10611C3A",
+    "C1C1A440",
+    "3116352B",
+    "3ACF7404",
+    "88FD4E4C",
+    "F50E76A2",
+    "C0E6D4EC",
+    "4254CBBF",
+    "8E3F0527",
+    "A798A0BB",
+    "B498B655",
+    "FE1F9EFC",
+    NaN
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "cluster_id": 6,
+  "name": "Zona Strada Cuptorului",
+  "coordinates": [
+    [
+      24.1316163,
+      45.8132268
+    ],
+    [
+      24.1308212,
+      45.8135929
+    ],
+    [
+      24.1301385,
+      45.813825
+    ],
+    [
+      24.1323146,
+      45.8139536
+    ],
+    [
+      24.1324175,
+      45.8138461
+    ],
+    [
+      24.1324837,
+      45.8138028
+    ],
+    [
+      24.1325527,
+      45.8134617
+    ],
+    [
+      24.1327365,
+      45.813769
+    ],
+    [
+      24.1327875,
+      45.8133701
+    ],
+    [
+      24.1329025,
+      45.8135129
+    ],
+    [
+      24.1330116,
+      45.8132929
+    ],
+    [
+      24.1331309,
+      45.813227
+    ],
+    [
+      24.1333476,
+      45.8134913
+    ],
+    [
+      24.1334647,
+      45.8131029
+    ],
+    [
+      24.133975,
+      45.8137184
+    ],
+    [
+      24.1342796,
+      45.81281269999999
+    ],
+    [
+      24.1348603,
+      45.8128602
+    ],
+    [
+      24.1351538,
+      45.8124991
+    ],
+    [
+      24.135053,
+      45.8125396
+    ],
+    [
+      24.1349106,
+      45.812983
+    ],
+    [
+      24.134672,
+      45.8127183
+    ],
+    [
+      24.1357574,
+      45.8131648
+    ],
+    [
+      24.1352103,
+      45.8132867
+    ],
+    [
+      24.1375796,
+      45.8144796
+    ],
+    [
+      24.1377702,
+      45.8146056
+    ],
+    [
+      24.1379463,
+      45.8149168
+    ]
+  ],
+  "addresses": [
+    "Strada Țiglarilor 111, Sibiu, Romania",
+    "Strada Deventer 7, Sibiu, Romania",
+    "Strada Deventer 15, Sibiu, Romania",
+    "Strada Cuptorului 38, Sibiu, Romania",
+    "Strada Cuptorului 36, Sibiu, Romania",
+    "Strada Cuptorului 34, Sibiu, Romania",
+    "Strada Cuptorului 31, Sibiu, Romania",
+    "Strada Cuptorului 30, Sibiu, Romania",
+    "Strada Cuptorului 29, Sibiu, Romania",
+    "Strada Cuptorului 26, Sibiu, Romania",
+    "Strada Cuptorului 25, Sibiu, Romania",
+    "Strada Cuptorului 23, Sibiu, Romania",
+    "Strada Cuptorului 20, Sibiu, Romania",
+    "Strada Cuptorului 19, Sibiu, Romania",
+    "Strada Cuptorului 14 B, Sibiu, Romania",
+    "Strada Cuptorului 13, Sibiu, Romania",
+    "Strada Cuptorului 14, Sibiu, Romania",
+    "Strada Cuptorului 1, Sibiu, Romania",
+    "Strada Cuptorului 3, Sibiu, Romania",
+    "Strada Cuptorului 12, Sibiu, Romania",
+    "Strada Cuptorului 7 G, Sibiu, Romania",
+    "Strada Cuptorului 10, Sibiu, Romania",
+    "Strada Cuptorului 12 B, Sibiu, Romania",
+    "Strada Ulmului 62, Sibiu, Romania",
+    "Strada Ulmului 60, Sibiu, Romania",
+    "Strada Ulmului 56, Sibiu, Romania"
+  ],
+  "ids": [
+    "6AE11832",
+    "10755708",
+    "1A12CBD2",
+    "F539D9DF",
+    "41B9076E",
+    "10CA3CC1",
+    "847C0F30",
+    "167FA8AB",
+    "BBA6BF06",
+    "85B42DD7",
+    "01FE8A3B",
+    "DD84542B",
+    "D3F215FB",
+    "271E589F",
+    "0D98E9DC",
+    "833087AE",
+    "54057190",
+    "6C62A5DC",
+    "0A87C492",
+    "FD3C2F3B",
+    "FE055655",
+    "8F3E7C0F",
+    "E3A4D4BD",
+    "37C3E49C",
+    "E3139A70",
+    "C437BB65"
+  ]
+}
