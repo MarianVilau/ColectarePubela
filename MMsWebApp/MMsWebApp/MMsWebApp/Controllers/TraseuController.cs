@@ -1,17 +1,13 @@
 ﻿using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MMsWebApp.Models;
 using CsvHelper;
 using CsvHelper.Configuration;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text.Json;
 using MMsWebApp.Data;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using MMsWebApp.Hubs;
 
 namespace MMsWebApp.Controllers
 {
@@ -20,12 +16,15 @@ namespace MMsWebApp.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly IHubContext<RouteHub> _hubContext;
 
-        public TraseuController(IHttpClientFactory httpClientFactory, AppDbContext context, IWebHostEnvironment environment)
+        public TraseuController(IHttpClientFactory httpClientFactory, AppDbContext context,
+            IWebHostEnvironment environment, IHubContext<RouteHub> hubContext)
         {
             _httpClientFactory = httpClientFactory;
             _context = context;
             _environment = environment;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index(DateTime? selectedDate = null)
@@ -47,22 +46,19 @@ namespace MMsWebApp.Controllers
                 .OrderBy(c => c.CollectedAt)
                 .ToListAsync();
 
-            // Calculate statistics
-            var points = collections.Select(c => new TraseuPoint
-            {
-                NrMasina = "SB 77 ULB", // Hardcoded for now
-                IdPubela = c.IdPubela,
-                ColectatLa = c.CollectedAt,
-                Adresa = c.Adresa,
-                Latitude = c.Latitude,
-                Longitude = c.Longitude
-            }).ToList();
-
-            var optimizedRoute = await OptimizeRoute(points);
-            var originalDistance = CalculateTotalDistance(points);
-            var optimizedDistance = CalculateTotalDistance(optimizedRoute);
-            var distanceDifference = originalDistance - optimizedDistance;
-            var optimizedTime = optimizedRoute.Count * 1; // 1 minute per collection
+            // Group by coordinates and select only unique points
+            var points = collections
+                .GroupBy(c => new { c.Latitude, c.Longitude })
+                .Select(g => new TraseuPoint
+                {
+                    NrMasina = "SB 77 ULB",
+                    IdPubela = string.Join(", ", g.Select(c => c.IdPubela).Distinct()),
+                    ColectatLa = g.First().CollectedAt,
+                    Adresa = g.First().Adresa,
+                    Latitude = g.Key.Latitude,
+                    Longitude = g.Key.Longitude,
+                    PunctCount = g.Count() // Adăugăm numărul de pubele la acest punct
+                }).ToList();
 
             ViewBag.AvailableDates = availableDates;
             ViewBag.SelectedDate = date;
@@ -70,10 +66,242 @@ namespace MMsWebApp.Controllers
             ViewBag.PointCount = points.Count;
             ViewBag.FirstPoint = points.FirstOrDefault();
             ViewBag.LastPoint = points.LastOrDefault();
-            ViewBag.DistanceDifference = distanceDifference;
-            ViewBag.OptimizedTime = optimizedTime;
+            ViewBag.TotalCollections = collections.Count;
 
             return View(points);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> OptimizeRoute([FromBody] JsonElement selectedDateElement)
+        {
+            try
+            {
+                var selectedDate = selectedDateElement.GetString();
+                if (selectedDate == null)
+                {
+                    return Json(new { success = false, message = "Data selectată este invalidă!" });
+                }
+
+                var date = DateTime.Parse(selectedDate);
+                var collections = await _context.Colectari
+                    .Include(c => c.Pubela)
+                    .Where(c => c.CollectedAt.Date == date.Date)
+                    .OrderBy(c => c.CollectedAt)
+                    .ToListAsync();
+
+                if (!collections.Any())
+                {
+                    return Json(new { success = false, message = "Nu există colectări pentru data selectată!" });
+                }
+
+                await _hubContext.Clients.All.SendAsync("ReceiveRouteUpdate", $"Număr total colectări: {collections.Count}");
+
+                // Group by coordinates and select only unique points
+                var points = collections
+                    .GroupBy(c => new { c.Latitude, c.Longitude })
+                    .Select(g => new TraseuPoint
+                    {
+                        NrMasina = "SB 77 ULB",
+                        IdPubela = string.Join(", ", g.Select(c => c.IdPubela).Distinct()),
+                        ColectatLa = g.First().CollectedAt,
+                        Adresa = g.First().Adresa,
+                        Latitude = g.Key.Latitude,
+                        Longitude = g.Key.Longitude,
+                        PunctCount = g.Count()
+                    }).ToList();
+
+                await _hubContext.Clients.All.SendAsync("ReceiveRouteUpdate", $"Număr puncte unice: {points.Count}");
+
+                var matrixFilePath = Path.Combine(_environment.ContentRootPath, "route_processing", "matrix_results", "full_matrix_mapbox.json");
+
+                if (!System.IO.File.Exists(matrixFilePath))
+                {
+                    return Json(new { success = false, message = "Fișierul cu matricea de distanțe nu există!" });
+                }
+
+                // Read the distance matrix for original distance calculation
+                var jsonString = System.IO.File.ReadAllText(matrixFilePath);
+
+                try
+                {
+                    using (JsonDocument document = JsonDocument.Parse(jsonString))
+                    {
+                        var root = document.RootElement;
+                        
+                        if (!root.TryGetProperty("distances", out var distances))
+                        {
+                            return Json(new { success = false, message = "Formatul matricei de distanțe este invalid! Lipsește proprietatea 'distances'." });
+                        }
+
+                        if (distances.ValueKind != JsonValueKind.Array)
+                        {
+                            return Json(new { success = false, message = "Formatul matricei de distanțe este invalid! Proprietatea 'distances' nu este un array." });
+                        }
+
+                        var distanceMatrix = new List<List<int>>();
+                        var rowCount = 0;
+                        foreach (var row in distances.EnumerateArray())
+                        {
+                            if (row.ValueKind != JsonValueKind.Array)
+                            {
+                                return Json(new { success = false, message = $"Formatul matricei de distanțe este invalid! Rândul {rowCount} nu este un array." });
+                            }
+
+                            var distanceRow = new List<int>();
+                            var colCount = 0;
+                            foreach (var cell in row.EnumerateArray())
+                            {
+                                try
+                                {
+                                    distanceRow.Add((int)Math.Round(cell.GetDouble()));
+                                    colCount++;
+                                }
+                                catch (Exception ex)
+                                {
+                                    return Json(new { success = false, message = $"Eroare la citirea distanței [{rowCount},{colCount}]: {ex.Message}" });
+                                }
+                            }
+                            distanceMatrix.Add(distanceRow);
+                            rowCount++;
+                        }
+
+                        if (points.Count > distanceMatrix.Count)
+                        {
+                            return Json(new { success = false, message = $"Numărul de puncte ({points.Count}) este mai mare decât dimensiunea matricei de distanțe ({distanceMatrix.Count})!" });
+                        }
+
+                        var optimizer = new RouteOptimizer(matrixFilePath, _hubContext);
+                        var (optimizedIndices, totalDistance, totalDuration) = await optimizer.OptimizeRoute();
+
+                        if (optimizedIndices == null || !optimizedIndices.Any())
+                        {
+                            return Json(new { success = false, message = "Nu s-a putut genera un traseu optimizat!" });
+                        }
+
+                        var optimizedPoints = new List<TraseuPoint>();
+                        foreach (var index in optimizedIndices.Take(points.Count))
+                        {
+                            if (index >= 0 && index < points.Count)
+                            {
+                                optimizedPoints.Add(points[index]);
+                            }
+                        }
+
+                        if (!optimizedPoints.Any())
+                        {
+                            return Json(new { success = false, message = "Nu s-au putut mapa punctele optimizate!" });
+                        }
+
+                        // Calculate distances
+                        var originalDistance = CalculateTotalMatrixDistance(points.Count, distanceMatrix);
+                        var optimizedDistance = totalDistance / 1000.0; // Convert to kilometers
+                        var distanceDifference = originalDistance - optimizedDistance;
+                        var estimatedDuration = TimeSpan.FromSeconds(totalDuration);
+
+                        return Json(new
+                        {
+                            success = true,
+                            optimizedRoute = optimizedPoints,
+                            originalDistance,
+                            optimizedDistance,
+                            distanceDifference,
+                            estimatedDuration = estimatedDuration.ToString(@"hh\:mm\:ss")
+                        });
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    return Json(new { success = false, message = $"Eroare la citirea matricei de distanțe: {ex.Message}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Eroare la optimizarea traseului: {ex.Message}" });
+            }
+        }
+
+        private double CalculateTotalMatrixDistance(List<int> route, List<List<int>>? matrix)
+        {
+            if (matrix == null || route.Count < 2) return 0;
+            
+            double totalDistance = 0;
+            try
+            {
+                // Add distance from start point (index 0 in matrix) to first point
+                if (route[0] >= 0 && route[0] < matrix[0].Count)
+                {
+                    Console.WriteLine($"Distanță start -> primul punct: {matrix[0][route[0]]} metri");
+                    totalDistance += matrix[0][route[0]];
+                }
+
+                // Add distances between points
+                for (int i = 0; i < route.Count - 1; i++)
+                {
+                    if (route[i] >= 0 && route[i] < matrix.Count && 
+                        route[i + 1] >= 0 && route[i + 1] < matrix[route[i]].Count)
+                    {
+                        var distance = matrix[route[i]][route[i + 1]];
+                        Console.WriteLine($"Distanță punct {i} -> punct {i+1}: {distance} metri");
+                        totalDistance += distance;
+                    }
+                }
+
+                // Add distance from last point to end point (last index in matrix)
+                if (route.Last() >= 0 && route.Last() < matrix.Count)
+                {
+                    var lastDistance = matrix[route.Last()][matrix.Count - 1];
+                    Console.WriteLine($"Distanță ultimul punct -> final: {lastDistance} metri");
+                    totalDistance += lastDistance;
+                }
+
+                Console.WriteLine($"Distanță totală calculată: {totalDistance} metri = {totalDistance/1000.0:F2} km");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating distance: {ex.Message}");
+                return 0;
+            }
+
+            return totalDistance / 1000.0; // Convert to kilometers
+        }
+
+        private double CalculateTotalMatrixDistance(int pointCount, List<List<int>>? matrix)
+        {
+            if (matrix == null || pointCount < 2) return 0;
+            
+            double totalDistance = 0;
+            try
+            {
+                // Add distance from start point (index 0) to first collection point
+                var startDistance = matrix[0][1];
+                Console.WriteLine($"Distanță originală start -> primul punct: {startDistance} metri");
+                totalDistance += startDistance;
+
+                // Add distances between collection points
+                for (int i = 1; i < pointCount - 1; i++)
+                {
+                    if (i + 1 < matrix[i].Count)
+                    {
+                        var distance = matrix[i][i + 1];
+                        Console.WriteLine($"Distanță originală punct {i} -> punct {i+1}: {distance} metri");
+                        totalDistance += distance;
+                    }
+                }
+
+                // Add distance from last collection point to end point
+                var endDistance = matrix[pointCount - 1][matrix.Count - 1];
+                Console.WriteLine($"Distanță originală ultimul punct -> final: {endDistance} metri");
+                totalDistance += endDistance;
+
+                Console.WriteLine($"Distanță totală originală calculată: {totalDistance} metri = {totalDistance/1000.0:F2} km");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating distance: {ex.Message}");
+                return 0;
+            }
+
+            return totalDistance / 1000.0; // Convert to kilometers
         }
 
         private async Task<List<TraseuPoint>> GetPointsFromCsv(string filePath)
@@ -81,62 +309,30 @@ namespace MMsWebApp.Controllers
             var points = new List<TraseuPoint>();
 
             using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = "," }))
+            using (var csv = new CsvReader(reader,
+                       new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = "," }))
             {
                 await foreach (var record in csv.GetRecordsAsync<TraseuPoint>())
                 {
                     points.Add(record);
                 }
             }
+
             return points;
-        }
-
-        private async Task<List<TraseuPoint>> OptimizeRoute(List<TraseuPoint> points)
-        {
-            // Implement logic to call Mapbox Matrix API and solve TSP
-            // Save the API responses to avoid exceeding the request limit
-
-            // For simplicity, we will return the points as is
-            return points.OrderBy(p => p.ColectatLa).ToList();
-        }
-
-        private double CalculateTotalDistance(List<TraseuPoint> points)
-        {
-            double totalDistance = 0.0;
-            for (int i = 0; i < points.Count - 1; i++)
-            {
-                totalDistance += CalculateDistance(points[i], points[i + 1]);
-            }
-            return totalDistance;
-        }
-
-        private double CalculateDistance(TraseuPoint point1, TraseuPoint point2)
-        {
-            var R = 6371e3; // metres
-            var φ1 = point1.Latitude * Math.PI / 180;
-            var φ2 = point2.Latitude * Math.PI / 180;
-            var Δφ = (point2.Latitude - point1.Latitude) * Math.PI / 180;
-            var Δλ = (point2.Longitude - point1.Longitude) * Math.PI / 180;
-
-            var a = Math.Sin(Δφ / 2) * Math.Sin(Δφ / 2) +
-                    Math.Cos(φ1) * Math.Cos(φ2) *
-                    Math.Sin(Δλ / 2) * Math.Sin(Δλ / 2);
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-            var distance = R * c; // in metres
-            return distance / 1000; // convert to kilometers
         }
 
         private async Task<TraseuPoint> GetCoordinates(string address)
         {
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync($"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key=YOUR_API_KEY");
+            var response =
+                await client.GetAsync(
+                    $"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key=YOUR_API_KEY");
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
             var geocodeResponse = JsonSerializer.Deserialize<GeocodeResponse>(content);
 
-            if (geocodeResponse?.Results?.FirstOrDefault() != null)
+            if (geocodeResponse?.Results.FirstOrDefault() != null)
             {
                 var location = geocodeResponse.Results.First().Geometry.Location;
                 return new TraseuPoint
@@ -163,7 +359,7 @@ namespace MMsWebApp.Controllers
             try
             {
                 var filePath = Path.Combine(_environment.ContentRootPath, "Data", "Traseu2.csv");
-                
+
                 var config = new CsvConfiguration(CultureInfo.InvariantCulture)
                 {
                     HasHeaderRecord = true,
@@ -175,7 +371,7 @@ namespace MMsWebApp.Controllers
                 using (var csv = new CsvReader(reader, config))
                 {
                     var records = csv.GetRecords<TraseuPoint>().ToList();
-                    
+
                     // Exclude first and last entry
                     records = records.Skip(1).Take(records.Count - 2).ToList();
 

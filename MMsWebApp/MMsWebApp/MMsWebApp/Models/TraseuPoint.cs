@@ -19,13 +19,16 @@ namespace MMsWebApp.Models
         public DateTime ColectatLa { get; set; }
 
         [Name("adresa")]
-        public required string Adresa { get; set; }
+        public required string? Adresa { get; set; }
 
         [Name("Latitude")]
         public double Latitude { get; set; }
 
         [Name("Longitude")]
         public double Longitude { get; set; }
+
+        [Name("PunctCount")]
+        public int PunctCount { get; set; }
     }
 
     public class CustomDateTimeConverter : DateTimeConverter

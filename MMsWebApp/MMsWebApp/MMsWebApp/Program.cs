@@ -1,16 +1,12 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
+using MMsWebApp.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
-
+builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -23,6 +19,20 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Adăugăm header-ul CSP
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("Content-Security-Policy", 
+        "default-src 'self' https:; " +
+        "img-src 'self' https: data: blob:; " +
+        "style-src 'self' https: 'unsafe-inline'; " +
+        "script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; " +
+        "font-src 'self' https: data:; " +
+        "connect-src 'self' https:;");
+    
+    await next();
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -33,5 +43,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapHub<RouteHub>("/routeHub");
 
 app.Run();
