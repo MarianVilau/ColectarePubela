@@ -160,59 +160,126 @@
      crossorigin=""></script>
      
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+    <style>
+        #map { 
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+            z-index: 1;
+        }
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: #c30b82;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+        }
+
+        .marker-pin::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            margin: 3px 0 0 3px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .custom-div-icon i {
+            position: absolute;
+            width: 22px;
+            font-size: 14px;
+            left: 4px;
+            top: 4px;
+            text-align: center;
+            transform: rotate(45deg);
+        }
+    </style>
 
     <script>
         var map, polyline, markers = [];
         let connection;
 
+        // Get the base URL from the current window location
+        const baseUrl = window.location.hostname === "localhost" ? 
+            "https://localhost:7223" : 
+            "https://your-remote-url.com"; // Înlocuiește cu URL-ul tău real
+
         // Initialize SignalR connection
         connection = new signalR.HubConnectionBuilder()
-            .withUrl("/routeHub")
+            .withUrl(`${baseUrl}/routeHub`)
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
             .build();
+
+        connection.onreconnecting(error => {
+            console.log("Reconnecting to SignalR hub...", error);
+        });
+
+        connection.onreconnected(connectionId => {
+            console.log("Reconnected to SignalR hub.", connectionId);
+        });
+
+        connection.onclose(error => {
+            console.log("Connection closed.", error);
+        });
 
         connection.on("ReceiveRouteUpdate", function (message) {
             const updates = document.getElementById("updates");
-            const newUpdate = document.createElement("div");
-            newUpdate.textContent = message;
-            newUpdate.className = "mb-2 text-muted";
-            updates.insertBefore(newUpdate, updates.firstChild);
+            if (updates) {
+                const newUpdate = document.createElement("div");
+                newUpdate.textContent = message;
+                newUpdate.className = "mb-2 text-muted";
+                updates.insertBefore(newUpdate, updates.firstChild);
+            }
         });
 
-        connection.start().catch(function (err) {
-            return console.error(err.toString());
-        });
+        connection.start()
+            .then(() => console.log("Connected to SignalR hub!"))
+            .catch(function (err) {
+                console.error("Error connecting to SignalR hub:", err.toString());
+            });
 
         function initializeMap() {
-            map = L.map('map').setView([45.82245899999999, 24.147542], 13);
+            if (!map) {
+                console.log("Initializing map...");
+                map = L.map('map').setView([45.82245899999999, 24.147542], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
 
-            // Add start point (Cisnădie)
-            var startPoint = L.marker([45.7315361, 24.1779393], {
-                icon: L.divIcon({
-                    className: 'custom-div-icon',
-                    html: "<div style='background-color:#4CAF50;' class='marker-pin'></div><i class='fa fa-play' style='color: white;'></i>",
-                    iconSize: [30, 42],
-                    iconAnchor: [15, 42]
-                })
-            }).addTo(map)
-            .bindPopup("<strong>Punct Start</strong><br>Strada Șelimbărului 90, Cisnădie, Romania");
+                // Add start point (Cisnădie)
+                var startPoint = L.marker([45.7315361, 24.1779393], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#4CAF50;' class='marker-pin'></div><i class='fa fa-play' style='color: white;'></i>",
+                        iconSize: [30, 42],
+                        iconAnchor: [15, 42]
+                    })
+                }).addTo(map)
+                .bindPopup("<strong>Punct Start</strong><br>Strada Șelimbărului 90, Cisnădie, Romania");
 
-            // Add end point (Cristian)
-            var endPoint = L.marker([45.7877059, 24.0247875], {
-                icon: L.divIcon({
-                    className: 'custom-div-icon',
-                    html: "<div style='background-color:#f44336;' class='marker-pin'></div><i class='fa fa-stop' style='color: white;'></i>",
-                    iconSize: [30, 42],
-                    iconAnchor: [15, 42]
-                })
-            }).addTo(map)
-            .bindPopup("<strong>Punct Final</strong><br>DN1 FN, Cristian 557085");
+                // Add end point (Cristian)
+                var endPoint = L.marker([45.7877059, 24.0247875], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#f44336;' class='marker-pin'></div><i class='fa fa-stop' style='color: white;'></i>",
+                        iconSize: [30, 42],
+                        iconAnchor: [15, 42]
+                    })
+                }).addTo(map)
+                .bindPopup("<strong>Punct Final</strong><br>DN1 FN, Cristian 557085");
 
-            displayPoints(@Html.Raw(Json.Serialize(Model)));
+                displayPoints(@Html.Raw(Json.Serialize(Model)));
+            }
         }
 
         function displayPoints(points) {
@@ -466,7 +533,7 @@
             });
         }
 
-        // Initialize map when page loads
+        // Call initializeMap when the document is ready
         document.addEventListener('DOMContentLoaded', initializeMap);
     </script>
 }
@@ -542,37 +609,6 @@
         margin: 0;
     }
 
-    .marker-pin {
-        width: 30px;
-        height: 30px;
-        border-radius: 50% 50% 50% 0;
-        position: absolute;
-        transform: rotate(-45deg);
-        left: 50%;
-        top: 50%;
-        margin: -15px 0 0 -15px;
-    }
-
-    .marker-pin::after {
-        content: '';
-        width: 24px;
-        height: 24px;
-        margin: 3px 0 0 3px;
-        background: #fff;
-        position: absolute;
-        border-radius: 50%;
-    }
-
-    .custom-div-icon i {
-        position: absolute;
-        width: 22px;
-        font-size: 14px;
-        left: 4px;
-        top: 4px;
-        text-align: center;
-        transform: rotate(45deg);
-    }
-
     .alert-info {
         background-color: #f8f9fa;
         border-color: #ddd;
@@ -582,8 +618,6 @@
         border-radius: 4px;
     }
 </style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
 @{
     ViewData["Title"] = "Import Traseu";

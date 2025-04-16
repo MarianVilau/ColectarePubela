@@ -271,7 +271,6 @@ __pycache__/
 venv/
 .env
 
-wwwroot
 
 # Cake - Uncomment if you are using it
 # tools/
