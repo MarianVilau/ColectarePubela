@@ -1,0 +1,336 @@
+@model List<MMsWebApp.Models.TraseuPoint>
+
+@{
+    ViewData["Title"] = "Traseu Colectare";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Traseu Colectare - @ViewBag.SelectedDate.ToString("dd MMMM yyyy")</h4>
+                        <div class="d-flex align-items-center">
+                            <form method="get" class="me-3">
+                                <select name="selectedDate" class="form-select" onchange="this.form.submit()">
+                                    @foreach (var date in ViewBag.AvailableDates)
+                                    {
+                                        string selected = date.Date == ViewBag.SelectedDate.Date ? "selected" : "";
+                                        string formattedDate = date.ToString("yyyy-MM-dd");
+                                        string displayDate = date.ToString("dd MMMM yyyy");
+                                        <option value="@formattedDate" selected="@(selected == "selected")">
+                                            @displayDate
+                                        </option>
+                                    }
+                                </select>
+                            </form>
+                            <form method="post" asp-action="Import">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-upload"></i> Importă Date
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> @TempData["Message"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Colectări</h5>
+                                    <p class="card-text display-6">@ViewBag.TotalLines</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Distanță Optimizată</h5>
+                                    <p class="card-text display-6">@ViewBag.DistanceDifference.ToString("F2") km</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body">
+                                    <h5 class="card-title">Timp Estimat</h5>
+                                    <p class="card-text display-6">@ViewBag.OptimizedTime min</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Număr Mașină</h5>
+                                    <p class="card-text display-6">SB 77 ULB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="map" style="height: 600px; margin-bottom: 20px;" class="rounded"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="route-container" style="height: 600px; overflow-y: auto;">
+                                @foreach (var point in Model.OrderBy(p => p.ColectatLa))
+                                {
+                                    <div class="route-point">
+                                        <div class="point-circle"></div>
+                                        <div class="route-line"></div>
+                                        <div class="point-info">
+                                            <strong>Mașina: @point.NrMasina</strong><br>
+                                            <strong>Pubelă: @point.IdPubela</strong><br>
+                                            <small>@point.Adresa</small><br>
+                                            <small>Colectat la: @point.ColectatLa.ToString("HH:mm:ss")</small><br>
+                                            <small>Coordonate: @point.Latitude.ToString("F6"), @point.Longitude.ToString("F6")</small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nr.</th>
+                                    <th>Oră</th>
+                                    <th>ID Pubelă</th>
+                                    <th>Adresă</th>
+                                    <th>Coordonate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var (point, index) in Model.Select((p, i) => (p, i + 1)))
+                                {
+                                    <tr>
+                                        <td>@index</td>
+                                        <td>@point.ColectatLa.ToString("HH:mm:ss")</td>
+                                        <td><code>@point.IdPubela</code></td>
+                                        <td>@point.Adresa</td>
+                                        <td>
+                                            <small class="text-muted">
+                                                @point.Latitude.ToString("F6"), @point.Longitude.ToString("F6")
+                                            </small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([45.82245899999999, 24.147542], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Adăugăm punctul de start (Cisnădie)
+        var startPoint = L.marker([45.7315361, 24.1779393], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:#4CAF50;' class='marker-pin'></div><i class='fa fa-play' style='color: white;'></i>",
+                iconSize: [30, 42],
+                iconAnchor: [15, 42]
+            })
+        }).addTo(map)
+        .bindPopup("<strong>Punct Start</strong><br>Strada Șelimbărului 90, Cisnădie, Romania");
+
+        // Adăugăm punctele din traseu
+        var points = @Html.Raw(Json.Serialize(Model));
+        var markers = [];
+        var latlngs = [[45.7315361, 24.1779393]]; // Adăugăm punctul de start în traseu
+
+        points.forEach(function(point) {
+            var marker = L.marker([point.latitude, point.longitude])
+                .bindPopup(`
+                    <strong>ID Pubelă: ${point.idPubela}</strong><br>
+                    Adresă: ${point.adresa}<br>
+                    Ora: ${new Date(point.colectatLa).toLocaleTimeString()}
+                `)
+                .addTo(map);
+            markers.push(marker);
+            latlngs.push([point.latitude, point.longitude]);
+        });
+
+        // Adăugăm punctul final (Cristian)
+        latlngs.push([45.7877059, 24.0247875]);
+        var endPoint = L.marker([45.7877059, 24.0247875], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:#f44336;' class='marker-pin'></div><i class='fa fa-stop' style='color: white;'></i>",
+                iconSize: [30, 42],
+                iconAnchor: [15, 42]
+            })
+        }).addTo(map)
+        .bindPopup("<strong>Punct Final</strong><br>DN1 FN, Cristian 557085");
+
+        if (latlngs.length > 0) {
+            var polyline = L.polyline(latlngs, {color: 'red', weight: 3}).addTo(map);
+            map.fitBounds(polyline.getBounds());
+        }
+    </script>
+}
+
+<style>
+    .route-container {
+        margin: 20px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .route-point {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .point-circle {
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        border-radius: 50%;
+        margin-right: 20px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+    }
+
+    .route-line {
+        position: absolute;
+        left: 10px;
+        top: 20px;
+        bottom: -20px;
+        width: 2px;
+        background-color: #007bff;
+        z-index: 1;
+    }
+
+    .point-info {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        flex-grow: 1;
+        margin-top: -5px;
+    }
+
+    .route-point:last-child .route-line {
+        display: none;
+    }
+
+    .debug-log {
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 0;
+    }
+
+    .marker-pin {
+        width: 30px;
+        height: 30px;
+        border-radius: 50% 50% 50% 0;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 50%;
+        top: 50%;
+        margin: -15px 0 0 -15px;
+    }
+
+    .marker-pin::after {
+        content: '';
+        width: 24px;
+        height: 24px;
+        margin: 3px 0 0 3px;
+        background: #fff;
+        position: absolute;
+        border-radius: 50%;
+    }
+
+    .custom-div-icon i {
+        position: absolute;
+        width: 22px;
+        font-size: 14px;
+        left: 4px;
+        top: 4px;
+        text-align: center;
+        transform: rotate(45deg);
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+@{
+    ViewData["Title"] = "Import Traseu";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Import Traseu</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> @TempData["Message"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Acest proces va importa datele din fișierul CSV în baza de date, excluzând prima și ultima intrare.
+                    </div>
+
+                    <form asp-action="Import" method="post">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Importă Date
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

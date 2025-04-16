@@ -1,0 +1,146 @@
+﻿@model MMsWebApp.Models.Pubela
+
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+    }
+</style>
+
+<!-- Modal pentru editare -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editare Pubelă</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId" />
+                    <div class="form-group mb-3">
+                        <label for="editTip" class="control-label">Tip Pubelă</label>
+                        <input type="text" id="editTip" class="form-control" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+                <button type="button" class="btn btn-primary" onclick="saveEdit()">Salvează</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Lista Pubelelor</h4>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID (RFID)</th>
+                    <th>Tip</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.Pubele)
+                {
+                    <tr>
+                        <td><code>@item.Id</code></td>
+                        <td><span class="badge bg-info">@item.Tip</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-warning btn-sm" 
+                                        onclick="openEditModal('@item.Id', '@item.Tip')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Sigur doriți să ștergeți această pubelă?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Adaugă Pubelă Nouă</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div class="form-group mb-3">
+                        <label asp-for="Id" class="control-label">ID (RFID)</label>
+                        <input asp-for="Id" class="form-control" />
+                        <span asp-validation-for="Id" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Tip" class="control-label">Tip Pubelă</label>
+                        <input asp-for="Tip" class="form-control" />
+                        <span asp-validation-for="Tip" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Adaugă
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function openEditModal(id, tip) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editTip').value = tip;
+            
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+
+        function saveEdit() {
+            const data = {
+                id: document.getElementById('editId').value,
+                tip: document.getElementById('editTip').value
+            };
+
+            fetch('/Pubele/EditAjax/' + data.id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                    location.reload();
+                } else {
+                    alert('Eroare la salvare: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Eroare la salvare: ' + error);
+            });
+        }
+    </script>
+}

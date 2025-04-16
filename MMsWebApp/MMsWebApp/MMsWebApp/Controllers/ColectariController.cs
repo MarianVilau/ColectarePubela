@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MMsWebApp.Data;
 using MMsWebApp.Models;
 
 namespace MMsWebApp.Controllers
 {
-    [ApiController]
-    [Route("api/data")]
-    public class ColectariController : ControllerBase
+    public class ColectariController : Controller
     {
         private readonly AppDbContext _context;
 
@@ -16,33 +13,123 @@ namespace MMsWebApp.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public IActionResult PostColectari([FromBody] Colectare colectare)
+        [HttpGet]
+        public IActionResult Index()
         {
+            var model = new Colectare
+            {
+                IdPubela = string.Empty,
+                CollectedAt = DateTime.Now
+            };
+            
+            ViewBag.Pubele = _context.Pubele.ToList();
+            ViewBag.Colectari = _context.Colectari.ToList();
+            
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Colectare colectare)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Colectari.Add(colectare);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception)
+                {
+                    ModelState.AddModelError("", "Nu s-a putut salva colectarea. Verificați datele și încercați din nou.");
+                }
+            }
+            
+            ViewBag.Pubele = _context.Pubele.ToList();
+            ViewBag.Colectari = _context.Colectari.ToList();
+            return View("Index", colectare);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var colectare = await _context.Colectari.FindAsync(id);
             if (colectare == null)
             {
-                return BadRequest();
+                return NotFound();
+            }
+
+            _context.Colectari.Remove(colectare);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var colectare = await _context.Colectari.FindAsync(id);
+            if (colectare == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Pubele = _context.Pubele.ToList();
+            return View(colectare);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, Colectare colectare)
+        {
+            if (id != colectare.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(colectare);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception)
+                {
+                    ModelState.AddModelError("", "A apărut o eroare la salvare. Verificați datele și încercați din nou.");
+                }
+            }
+
+            ViewBag.Pubele = _context.Pubele.ToList();
+            return View(colectare);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAjax(int id, [FromBody] Colectare colectare)
+        {
+            if (id != colectare.Id)
+            {
+                return Json(new { success = false, message = "ID invalid" });
             }
 
             try
             {
-                _context.Colectari.Add(colectare);
-                _context.SaveChanges();
+                var existingColectare = await _context.Colectari.FindAsync(id);
+                if (existingColectare == null)
+                {
+                    return Json(new { success = false, message = "Colectarea nu a fost găsită" });
+                }
+
+                existingColectare.IdPubela = colectare.IdPubela;
+                existingColectare.CollectedAt = colectare.CollectedAt;
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-                // Log the exception details
-                Console.WriteLine($"An error occurred while saving the entity changes: {ex.InnerException?.Message}");
-                return StatusCode(500, "An error occurred while saving the entity changes.");
+                return Json(new { success = false, message = ex.Message });
             }
-
-            return Ok(colectare);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Colectare>>> GetColectari()
-        {
-            return await _context.Colectari.ToListAsync();
         }
     }
 }

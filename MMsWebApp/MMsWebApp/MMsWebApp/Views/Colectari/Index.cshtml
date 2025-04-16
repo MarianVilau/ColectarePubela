@@ -1,0 +1,185 @@
+﻿@model MMsWebApp.Models.Colectare
+@{
+    ViewData["Title"] = "Create Colectare";
+}
+
+<h1>Gestionare Colectări</h1>
+
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+    }
+</style>
+
+<!-- Edit mode-->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editare Colectare</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId" />
+                    <div class="form-group mb-3">
+                        <label for="editIdPubela" class="control-label">Pubelă</label>
+                        <select id="editIdPubela" class="form-select">
+                            @foreach (var pubela in ViewBag.Pubele)
+                            {
+                                <option value="@pubela.Id">@pubela.Id - @pubela.Tip</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="editCollectedAt" class="control-label">Data Colectării</label>
+                        <input type="datetime-local" id="editCollectedAt" class="form-control" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+                <button type="button" class="btn btn-primary" onclick="saveEdit()">Salvează</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Lista Colectărilor</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID Pubelă</th>
+                    <th>Tip Pubelă</th>
+                    <th>Data Colectării</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.Colectari)
+                {
+                    string tipPubela = "Necunoscut";
+                    foreach (var pubela in ViewBag.Pubele)
+                    {
+                        if (pubela.Id == item.IdPubela)
+                        {
+                            tipPubela = pubela.Tip;
+                            break;
+                        }
+                    }
+                    <tr>
+                        <td><code>@item.IdPubela</code></td>
+                        <td><span class="badge bg-info">@tipPubela</span></td>
+                        <td>@item.CollectedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-warning btn-sm" 
+                                        onclick="openEditModal('@item.Id', '@item.IdPubela', '@item.CollectedAt.ToString("yyyy-MM-ddTHH:mm")')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Sigur doriți să ștergeți această înregistrare?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Adaugă Colectare Nouă</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div class="form-group mb-3">
+                        <label asp-for="IdPubela" class="control-label">Pubelă</label>
+                        <select asp-for="IdPubela" class="form-select">
+                            <option value="">-- Selectați pubela --</option>
+                            @foreach (var pubela in ViewBag.Pubele)
+                            {
+                                <option value="@pubela.Id">
+                                    @pubela.Id - @pubela.Tip
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="IdPubela" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="CollectedAt" class="control-label">Data Colectării</label>
+                        <input asp-for="CollectedAt" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="CollectedAt" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Adaugă
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (ViewBag.Pubele != null && ViewBag.Pubele.Count == 0)
+        {
+            <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle"></i>
+                Nu există pubele înregistrate în sistem.
+                <a asp-controller="Pubele" asp-action="Create">Adăugați o pubelă</a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function openEditModal(id, idPubela, collectedAt) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editIdPubela').value = idPubela;
+            document.getElementById('editCollectedAt').value = collectedAt;
+            
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+
+        function saveEdit() {
+            const data = {
+                id: document.getElementById('editId').value,
+                idPubela: document.getElementById('editIdPubela').value,
+                collectedAt: document.getElementById('editCollectedAt').value
+            };
+
+            fetch('/Colectari/EditAjax/' + data.id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                    // Reload page to see changes
+                    location.reload();
+                } else {
+                    alert('Eroare la salvare: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Eroare la salvare: ' + error);
+            });
+        }
+    </script>
+}

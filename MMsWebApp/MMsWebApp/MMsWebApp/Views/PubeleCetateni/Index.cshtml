@@ -1,0 +1,182 @@
+﻿@model MMsWebApp.Models.PubelaCetatean
+
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+    }
+</style>
+
+<!-- Modal pentru editare -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editare Asociere Pubelă-Cetățean</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId" />
+                    <div class="form-group mb-3">
+                        <label for="editPubelaId" class="control-label">Pubelă</label>
+                        <select id="editPubelaId" class="form-select">
+                            @foreach (var pubela in ViewBag.Pubele)
+                            {
+                                <option value="@pubela.Id">@pubela.Id</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="editCetateanId" class="control-label">Cetățean</label>
+                        <select id="editCetateanId" class="form-select">
+                            @foreach (var cetatean in ViewBag.Cetateni)
+                            {
+                                <option value="@cetatean.Id">@cetatean.Nume @cetatean.Prenume</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="editAdresa" class="control-label">Adresă</label>
+                        <input type="text" id="editAdresa" class="form-control" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+                <button type="button" class="btn btn-primary" onclick="saveEdit()">Salvează</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Lista Asocierilor Pubelă-Cetățean</h4>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Pubelă</th>
+                    <th>Cetățean</th>
+                    <th>Adresă</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.PubeleCetateni)
+                {
+                    <tr>
+                        <td><code>@item.PubelaId</code></td>
+                        <td>@(item.Cetatean?.Nume + " " + item.Cetatean?.Prenume)</td>
+                        <td>@item.Adresa</td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-warning btn-sm" 
+                                        onclick="openEditModal('@item.Id', '@item.PubelaId', @item.CetateanId, '@item.Adresa')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Sigur doriți să ștergeți această asociere?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Adaugă Asociere Nouă</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div class="form-group mb-3">
+                        <label asp-for="PubelaId" class="control-label">Pubelă</label>
+                        <select asp-for="PubelaId" class="form-select" 
+                                asp-items="@(new SelectList(ViewBag.Pubele, "Id", "Id"))">
+                            <option value="">-- Selectați pubela --</option>
+                        </select>
+                        <span asp-validation-for="PubelaId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="CetateanId" class="control-label">Cetățean</label>
+                        <select asp-for="CetateanId" class="form-select" 
+                                asp-items="@(new SelectList(ViewBag.Cetateni, "Id", "Nume"))">
+                            <option value="">-- Selectați cetățeanul --</option>
+                        </select>
+                        <span asp-validation-for="CetateanId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Adresa" class="control-label">Adresă</label>
+                        <input asp-for="Adresa" class="form-control" />
+                        <span asp-validation-for="Adresa" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Adaugă
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function openEditModal(id, pubelaId, cetateanId, adresa) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editPubelaId').value = pubelaId;
+            document.getElementById('editCetateanId').value = cetateanId;
+            document.getElementById('editAdresa').value = adresa;
+            
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+
+        function saveEdit() {
+            const data = {
+                id: document.getElementById('editId').value,
+                pubelaId: document.getElementById('editPubelaId').value,
+                cetateanId: document.getElementById('editCetateanId').value,
+                adresa: document.getElementById('editAdresa').value
+            };
+
+            fetch('/PubeleCetateni/EditAjax/' + data.id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                    location.reload();
+                } else {
+                    alert('Eroare la salvare: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Eroare la salvare: ' + error);
+            });
+        }
+    </script>
+}

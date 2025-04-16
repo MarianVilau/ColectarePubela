@@ -1,0 +1,180 @@
+﻿@model MMsWebApp.Models.Cetatean
+
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+    }
+</style>
+
+<!-- Modal pentru editare -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editare Cetățean</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId" />
+                    <div class="form-group mb-3">
+                        <label for="editNume" class="control-label">Nume</label>
+                        <input type="text" id="editNume" class="form-control" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="editPrenume" class="control-label">Prenume</label>
+                        <input type="text" id="editPrenume" class="form-control" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="editEmail" class="control-label">Email</label>
+                        <input type="email" id="editEmail" class="form-control" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="editCNP" class="control-label">CNP</label>
+                        <input type="text" id="editCNP" class="form-control" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+                <button type="button" class="btn btn-primary" onclick="saveEdit()">Salvează</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Lista Cetățenilor</h4>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nume</th>
+                    <th>Prenume</th>
+                    <th>Email</th>
+                    <th>CNP</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.Cetateni)
+                {
+                    <tr>
+                        <td>@item.Nume</td>
+                        <td>@item.Prenume</td>
+                        <td>@item.Email</td>
+                        <td><code>@item.CNP</code></td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-warning btn-sm" 
+                                        onclick="openEditModal('@item.Id', '@item.Nume', '@item.Prenume', '@item.Email', '@item.CNP')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Sigur doriți să ștergeți acest cetățean?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Adaugă Cetățean Nou</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div class="form-group mb-3">
+                        <label asp-for="Nume" class="control-label">Nume</label>
+                        <input asp-for="Nume" class="form-control" />
+                        <span asp-validation-for="Nume" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Prenume" class="control-label">Prenume</label>
+                        <input asp-for="Prenume" class="form-control" />
+                        <span asp-validation-for="Prenume" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Email" class="control-label">Email</label>
+                        <input asp-for="Email" class="form-control" type="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="CNP" class="control-label">CNP</label>
+                        <input asp-for="CNP" class="form-control" />
+                        <span asp-validation-for="CNP" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Adaugă
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function openEditModal(id, nume, prenume, email, cnp) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editNume').value = nume;
+            document.getElementById('editPrenume').value = prenume;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editCNP').value = cnp;
+            
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+
+        function saveEdit() {
+            const data = {
+                id: document.getElementById('editId').value,
+                nume: document.getElementById('editNume').value,
+                prenume: document.getElementById('editPrenume').value,
+                email: document.getElementById('editEmail').value,
+                cnp: document.getElementById('editCNP').value
+            };
+
+            fetch('/Cetateni/EditAjax/' + data.id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                    location.reload();
+                } else {
+                    alert('Eroare la salvare: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Eroare la salvare: ' + error);
+            });
+        }
+    </script>
+}

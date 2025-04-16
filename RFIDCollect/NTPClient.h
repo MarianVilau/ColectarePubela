@@ -7,7 +7,7 @@
 class NTPClient {
 private:
     const char* ntpServer = "pool.ntp.org"; ///< NTP server address
-    long gmtOffset_sec = 0; ///< GMT offset in seconds
+    long gmtOffset_sec = 3600; ///< GMT offset in seconds
     int daylightOffset_sec = 3600; ///< Daylight saving time offset in seconds
 
 public:

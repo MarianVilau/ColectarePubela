@@ -3,11 +3,24 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline';">
     <title>@ViewData["Title"] - MMsWebApp</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MMsWebApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    @await RenderSectionAsync("Styles", required: false)
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="anonymous"/>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"></script>
 </head>
 <body>
     <header>
@@ -20,13 +33,25 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+        </li>
+        <li class="nav-item">
+             <a class="nav-link text-dark" asp-controller="Colectari">Colectări</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Cetateni">Cetățeni</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="PubeleCetateni">Pubele Cetățeni</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Pubele">Pubele</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Traseu" asp-action="Index">Traseu Colectare</a>
+        </li>
+            </ul> 
                 </div>
             </div>
         </nav>
