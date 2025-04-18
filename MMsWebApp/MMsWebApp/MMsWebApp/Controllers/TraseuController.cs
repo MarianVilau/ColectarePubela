@@ -170,7 +170,7 @@ namespace MMsWebApp.Controllers
                             return Json(new { success = false, message = $"Numărul de puncte ({points.Count}) este mai mare decât dimensiunea matricei de distanțe ({distanceMatrix.Count})!" });
                         }
 
-                        var optimizer = new RouteOptimizer(matrixFilePath, _hubContext);
+                        var optimizer = new LocalRouteOptimizer(matrixFilePath, _hubContext);
                         var (optimizedIndices, totalDistance, totalDuration) = await optimizer.OptimizeRoute();
 
                         if (optimizedIndices == null || !optimizedIndices.Any())
