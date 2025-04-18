@@ -206,29 +206,10 @@
         var map, polyline, markers = [];
         let connection;
 
-        // Get the base URL from the current window location
-        const baseUrl = window.location.hostname === "localhost" ? 
-            "https://localhost:7223" : 
-            "https://your-remote-url.com"; // Înlocuiește cu URL-ul tău real
-
         // Initialize SignalR connection
         connection = new signalR.HubConnectionBuilder()
-            .withUrl(`${baseUrl}/routeHub`)
-            .withAutomaticReconnect()
-            .configureLogging(signalR.LogLevel.Information)
+            .withUrl("/routeHub")
             .build();
-
-        connection.onreconnecting(error => {
-            console.log("Reconnecting to SignalR hub...", error);
-        });
-
-        connection.onreconnected(connectionId => {
-            console.log("Reconnected to SignalR hub.", connectionId);
-        });
-
-        connection.onclose(error => {
-            console.log("Connection closed.", error);
-        });
 
         connection.on("ReceiveRouteUpdate", function (message) {
             const updates = document.getElementById("updates");
@@ -240,11 +221,9 @@
             }
         });
 
-        connection.start()
-            .then(() => console.log("Connected to SignalR hub!"))
-            .catch(function (err) {
-                console.error("Error connecting to SignalR hub:", err.toString());
-            });
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
 
         function initializeMap() {
             if (!map) {
