@@ -131,5 +131,22 @@ namespace MMsWebApp.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        [HttpGet]
+        public IActionResult ColectariCetatean(int cetateanId)
+        {
+            var colectari = _context.Colectari
+                .Where(c => _context.PubeleCetateni
+                    .Any(pc => pc.CetateanId == cetateanId && pc.PubelaId == c.IdPubela))
+                .ToList();
+
+            var cetatean = _context.Cetateni.Find(cetateanId);
+            if (cetatean == null)
+            {
+                return NotFound("Cetățeanul nu a fost găsit.");
+            }
+
+            ViewBag.Cetatean = cetatean;
+            return View(colectari);
+        }
     }
 }
