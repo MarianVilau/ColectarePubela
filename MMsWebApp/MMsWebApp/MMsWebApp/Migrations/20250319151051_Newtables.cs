@@ -43,7 +43,7 @@ namespace MMsWebApp.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PubelaId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PubelaId = table.Column<string>(type: "TEXT", nullable: false),
                     CetateanId = table.Column<int>(type: "INTEGER", nullable: false),
                     Adresa = table.Column<string>(type: "TEXT", nullable: false)
                 },
