@@ -25,6 +25,9 @@
                                     }
                                 </select>
                             </form>
+                            <button id="optimizeButton" class="btn btn-success me-3" onclick="optimizeRoute()">
+                                <i class="bi bi-shuffle"></i> Optimizează Traseu
+                            </button>
                             <form method="post" asp-action="Import">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-upload"></i> Importă Date
@@ -53,7 +56,7 @@
                         <div class="col-md-3">
                             <div class="card bg-info text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Total Colectări</h5>
+                                    <h5 class="card-title">Total Puncte Unice</h5>
                                     <p class="card-text display-6">@ViewBag.TotalLines</p>
                                 </div>
                             </div>
@@ -61,24 +64,25 @@
                         <div class="col-md-3">
                             <div class="card bg-success text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Distanță Optimizată</h5>
-                                    <p class="card-text display-6">@ViewBag.DistanceDifference.ToString("F2") km</p>
+                                    <h5 class="card-title">Total Colectări</h5>
+                                    <p class="card-text display-6">@ViewBag.TotalCollections</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card bg-warning text-dark">
                                 <div class="card-body">
-                                    <h5 class="card-title">Timp Estimat</h5>
-                                    <p class="card-text display-6">@ViewBag.OptimizedTime min</p>
+                                    <h5 class="card-title">Distanță Optimizată</h5>
+                                    <p id="optimizedDistance" class="card-text display-6">0.00 km</p>
+                                    <small class="text-muted" id="distanceDifference"></small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-primary text-white">
+                            <div class="card bg-info text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Număr Mașină</h5>
-                                    <p class="card-text display-6">SB 77 ULB</p>
+                                    <h5 class="card-title">Durată Estimată</h5>
+                                    <p id="estimatedDuration" class="card-text display-6">00:00:00</p>
                                 </div>
                             </div>
                         </div>
@@ -87,6 +91,7 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div id="map" style="height: 600px; margin-bottom: 20px;" class="rounded"></div>
+                            <div id="routeSummary" class="alert alert-info" style="display: none;"></div>
                         </div>
                         <div class="col-md-4">
                             <div class="route-container" style="height: 600px; overflow-y: auto;">
@@ -97,7 +102,7 @@
                                         <div class="route-line"></div>
                                         <div class="point-info">
                                             <strong>Mașina: @point.NrMasina</strong><br>
-                                            <strong>Pubelă: @point.IdPubela</strong><br>
+                                            <strong>Pubele (@point.PunctCount): @point.IdPubela</strong><br>
                                             <small>@point.Adresa</small><br>
                                             <small>Colectat la: @point.ColectatLa.ToString("HH:mm:ss")</small><br>
                                             <small>Coordonate: @point.Latitude.ToString("F6"), @point.Longitude.ToString("F6")</small>
@@ -114,7 +119,8 @@
                                 <tr>
                                     <th>Nr.</th>
                                     <th>Oră</th>
-                                    <th>ID Pubelă</th>
+                                    <th>Pubele</th>
+                                    <th>ID-uri Pubele</th>
                                     <th>Adresă</th>
                                     <th>Coordonate</th>
                                 </tr>
@@ -125,6 +131,7 @@
                                     <tr>
                                         <td>@index</td>
                                         <td>@point.ColectatLa.ToString("HH:mm:ss")</td>
+                                        <td>@point.PunctCount</td>
                                         <td><code>@point.IdPubela</code></td>
                                         <td>@point.Adresa</td>
                                         <td>
@@ -144,59 +151,369 @@
 </div>
 
 @section Scripts {
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+     
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+    <style>
+        #map { 
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+            z-index: 1;
+        }
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: #c30b82;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+        }
+
+        .marker-pin::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            margin: 3px 0 0 3px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .custom-div-icon i {
+            position: absolute;
+            width: 22px;
+            font-size: 14px;
+            left: 4px;
+            top: 4px;
+            text-align: center;
+            transform: rotate(45deg);
+        }
+    </style>
+
     <script>
-        var map = L.map('map').setView([45.82245899999999, 24.147542], 13);
+        var map, polyline, markers = [];
+        let connection;
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        // Initialize SignalR connection
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl("/routeHub")
+            .build();
 
-        // Adăugăm punctul de start (Cisnădie)
-        var startPoint = L.marker([45.7315361, 24.1779393], {
-            icon: L.divIcon({
-                className: 'custom-div-icon',
-                html: "<div style='background-color:#4CAF50;' class='marker-pin'></div><i class='fa fa-play' style='color: white;'></i>",
-                iconSize: [30, 42],
-                iconAnchor: [15, 42]
-            })
-        }).addTo(map)
-        .bindPopup("<strong>Punct Start</strong><br>Strada Șelimbărului 90, Cisnădie, Romania");
+        connection.on("ReceiveRouteUpdate", function (message) {
+            const updates = document.getElementById("updates");
+            if (updates) {
+                const newUpdate = document.createElement("div");
+                newUpdate.textContent = message;
+                newUpdate.className = "mb-2 text-muted";
+                updates.insertBefore(newUpdate, updates.firstChild);
+            }
+        });
 
-        // Adăugăm punctele din traseu
-        var points = @Html.Raw(Json.Serialize(Model));
-        var markers = [];
-        var latlngs = [[45.7315361, 24.1779393]]; // Adăugăm punctul de start în traseu
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
 
-        points.forEach(function(point) {
-            var marker = L.marker([point.latitude, point.longitude])
+        function initializeMap() {
+            if (!map) {
+                console.log("Initializing map...");
+                map = L.map('map').setView([45.82245899999999, 24.147542], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Add start point (Cisnădie)
+                var startPoint = L.marker([45.7315361, 24.1779393], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#4CAF50;' class='marker-pin'></div><i class='fa fa-play' style='color: white;'></i>",
+                        iconSize: [30, 42],
+                        iconAnchor: [15, 42]
+                    })
+                }).addTo(map)
+                .bindPopup("<strong>Punct Start</strong><br>Strada Șelimbărului 90, Cisnădie, Romania");
+
+                // Add end point (Cristian)
+                var endPoint = L.marker([45.7877059, 24.0247875], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#f44336;' class='marker-pin'></div><i class='fa fa-stop' style='color: white;'></i>",
+                        iconSize: [30, 42],
+                        iconAnchor: [15, 42]
+                    })
+                }).addTo(map)
+                .bindPopup("<strong>Punct Final</strong><br>DN1 FN, Cristian 557085");
+
+                displayPoints(@Html.Raw(Json.Serialize(Model)));
+            }
+        }
+
+        function displayPoints(points) {
+            // Clear existing markers and polyline
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            if (polyline) map.removeLayer(polyline);
+
+            points.forEach(function(point) {
+                var marker = L.marker([point.latitude, point.longitude])
+                    .bindPopup(`
+                        <strong>Pubele (${point.punctCount})</strong><br>
+                        ID-uri: ${point.idPubela}<br>
+                        Adresă: ${point.adresa}<br>
+                        Ora: ${new Date(point.colectatLa).toLocaleTimeString()}
+                    `)
+                    .addTo(map);
+                markers.push(marker);
+            });
+
+            // Fit bounds to markers
+            var group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds());
+        }
+
+        function displayOptimizedRoute(points) {
+            // Clear existing markers and polyline
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            if (polyline) map.removeLayer(polyline);
+
+            // Update route list first
+            var routeContainer = document.querySelector('.route-container');
+            routeContainer.innerHTML = '';
+            points.forEach(point => {
+                routeContainer.innerHTML += `
+                    <div class="route-point">
+                        <div class="point-circle"></div>
+                        <div class="route-line"></div>
+                        <div class="point-info">
+                            <strong>Mașina: ${point.nrMasina}</strong><br>
+                            <strong>Pubele (${point.punctCount}): ${point.idPubela}</strong><br>
+                            <small>${point.adresa}</small><br>
+                            <small>Colectat la: ${new Date(point.colectatLa).toLocaleTimeString()}</small><br>
+                            <small>Coordonate: ${point.latitude.toFixed(6)}, ${point.longitude.toFixed(6)}</small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            var latlngs = [[45.7315361, 24.1779393]]; // Start point
+            var waypoints = [];
+
+            // Add start point
+            waypoints.push([24.1779393, 45.7315361]); // Note: OSRM expects [lon, lat]
+
+            // Add all points first with blue markers
+            points.forEach(function(point) {
+                var marker = L.marker([point.latitude, point.longitude], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#007bff;' class='marker-pin'></div>",
+                        iconSize: [30, 42],
+                        iconAnchor: [15, 42]
+                    })
+                })
                 .bindPopup(`
-                    <strong>ID Pubelă: ${point.idPubela}</strong><br>
+                    <strong>Pubele (${point.punctCount})</strong><br>
+                    ID-uri: ${point.idPubela}<br>
                     Adresă: ${point.adresa}<br>
                     Ora: ${new Date(point.colectatLa).toLocaleTimeString()}
                 `)
                 .addTo(map);
-            markers.push(marker);
-            latlngs.push([point.latitude, point.longitude]);
-        });
+                markers.push(marker);
+                waypoints.push([point.longitude, point.latitude]); // OSRM expects [lon, lat]
+            });
 
-        // Adăugăm punctul final (Cristian)
-        latlngs.push([45.7877059, 24.0247875]);
-        var endPoint = L.marker([45.7877059, 24.0247875], {
-            icon: L.divIcon({
-                className: 'custom-div-icon',
-                html: "<div style='background-color:#f44336;' class='marker-pin'></div><i class='fa fa-stop' style='color: white;'></i>",
-                iconSize: [30, 42],
-                iconAnchor: [15, 42]
-            })
-        }).addTo(map)
-        .bindPopup("<strong>Punct Final</strong><br>DN1 FN, Cristian 557085");
+            // Add end point
+            waypoints.push([24.0247875, 45.7877059]); // Note: OSRM expects [lon, lat]
 
-        if (latlngs.length > 0) {
-            var polyline = L.polyline(latlngs, {color: 'red', weight: 3}).addTo(map);
-            map.fitBounds(polyline.getBounds());
+            // Create the waypoints string for the API call
+            var waypointsStr = waypoints.map(w => w.join(',')).join(';');
+            
+            // Call OSRM API to get the route
+            fetch(`https://router.project-osrm.org/route/v1/driving/${waypointsStr}?overview=full&geometries=geojson`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.routes && data.routes.length > 0) {
+                        // Convert coordinates from OSRM (they're in [lon, lat]) to [lat, lon] for Leaflet
+                        var routeCoordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        
+                        // Create the polyline with the route
+                        polyline = L.polyline(routeCoordinates, {
+                            color: 'red',
+                            weight: 4,
+                            opacity: 0.7,
+                            lineJoin: 'round'
+                        }).addTo(map);
+
+                        // Add start marker
+                        var startMarker = L.marker([45.7315361, 24.1779393], {
+                            icon: L.divIcon({
+                                className: 'custom-div-icon',
+                                html: "<div style='background-color:#4CAF50;' class='marker-pin'></div><i class='fa fa-play' style='color: white;'></i>",
+                                iconSize: [30, 42],
+                                iconAnchor: [15, 42]
+                            })
+                        }).addTo(map)
+                        .bindPopup("<strong>Punct Start</strong><br>Strada Șelimbărului 90, Cisnădie, Romania");
+
+                        // Add end marker
+                        var endMarker = L.marker([45.7877059, 24.0247875], {
+                            icon: L.divIcon({
+                                className: 'custom-div-icon',
+                                html: "<div style='background-color:#f44336;' class='marker-pin'></div><i class='fa fa-stop' style='color: white;'></i>",
+                                iconSize: [30, 42],
+                                iconAnchor: [15, 42]
+                            })
+                        }).addTo(map)
+                        .bindPopup("<strong>Punct Final</strong><br>DN1 FN, Cristian 557085");
+
+                        // Fit the map to show all the route
+                        map.fitBounds(polyline.getBounds(), {
+                            padding: [50, 50]
+                        });
+
+                        // Start animation after a short delay to allow the list to render
+                        setTimeout(() => {
+                            // Animate points being visited
+                            var currentIndex = 0;
+                            function updateNextPoint() {
+                                if (currentIndex < points.length) {
+                                    // Remove old marker
+                                    if (markers[currentIndex]) {
+                                        map.removeLayer(markers[currentIndex]);
+                                    }
+                                    
+                                    // Add new green marker
+                                    var point = points[currentIndex];
+                                    markers[currentIndex] = L.marker([point.latitude, point.longitude], {
+                                        icon: L.divIcon({
+                                            className: 'custom-div-icon',
+                                            html: "<div style='background-color:#4CAF50;' class='marker-pin'></div>",
+                                            iconSize: [30, 42],
+                                            iconAnchor: [15, 42]
+                                        })
+                                    })
+                                    .bindPopup(`
+                                        <strong>Pubele (${point.punctCount})</strong><br>
+                                        ID-uri: ${point.idPubela}<br>
+                                        Adresă: ${point.adresa}<br>
+                                        Ora: ${new Date(point.colectatLa).toLocaleTimeString()}
+                                    `)
+                                    .addTo(map);
+
+                                    // Update route list item
+                                    var routeItems = document.querySelectorAll('.route-point');
+                                    if (routeItems[currentIndex]) {
+                                        routeItems[currentIndex].classList.add('visited');
+                                        routeItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }
+
+                                    currentIndex++;
+                                    // Wait for collection time (30s) plus travel time
+                                    setTimeout(updateNextPoint, 500); // 500ms delay for visualization
+                                }
+                            }
+
+                            // Start the animation
+                            updateNextPoint();
+                        }, 500);
+
+                        // Add route summary if available
+                        if (data.routes[0].distance) {
+                            var distanceKm = (data.routes[0].distance / 1000).toFixed(2);
+                            var timeMinutes = Math.round(data.routes[0].duration / 60);
+                            document.getElementById('routeSummary').style.display = 'block';
+                            document.getElementById('routeSummary').innerHTML = 
+                                `Distanță totală: ${distanceKm} km<br>Timp estimat: ${timeMinutes} minute`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching route:', error);
+                    // Fallback to straight lines if the routing service fails
+                    var latlngs = [[45.7315361, 24.1779393]];
+                    points.forEach(point => latlngs.push([point.latitude, point.longitude]));
+                    latlngs.push([45.7877059, 24.0247875]);
+                    polyline = L.polyline(latlngs, {color: 'red', weight: 3}).addTo(map);
+                    map.fitBounds(polyline.getBounds());
+                });
         }
+
+        function optimizeRoute() {
+            var selectedDate = document.querySelector('select[name="selectedDate"]').value;
+            var optimizeButton = document.getElementById('optimizeButton');
+            
+            optimizeButton.disabled = true;
+            optimizeButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Optimizare...';
+
+            fetch('/Traseu/OptimizeRoute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedDate)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    displayOptimizedRoute(data.optimizedRoute);
+                    document.getElementById('optimizedDistance').textContent = data.optimizedDistance.toFixed(2) + ' km';
+                    document.getElementById('distanceDifference').textContent = 
+                        `Reducere: ${data.distanceDifference.toFixed(2)} km`;
+                    document.getElementById('estimatedDuration').textContent = data.estimatedDuration;
+                    
+                    // Update route list
+                    var routeContainer = document.querySelector('.route-container');
+                    routeContainer.innerHTML = '';
+                    data.optimizedRoute.forEach(point => {
+                        routeContainer.innerHTML += `
+                            <div class="route-point">
+                                <div class="point-circle"></div>
+                                <div class="route-line"></div>
+                                <div class="point-info">
+                                    <strong>Mașina: ${point.nrMasina}</strong><br>
+                                    <strong>Pubele (${point.punctCount}): ${point.idPubela}</strong><br>
+                                    <small>${point.adresa}</small><br>
+                                    <small>Colectat la: ${new Date(point.colectatLa).toLocaleTimeString()}</small><br>
+                                    <small>Coordonate: ${point.latitude.toFixed(6)}, ${point.longitude.toFixed(6)}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    alert('Eroare la optimizarea traseului: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Eroare la optimizarea traseului!');
+            })
+            .finally(() => {
+                optimizeButton.disabled = false;
+                optimizeButton.innerHTML = '<i class="bi bi-shuffle"></i> Optimizează Traseu';
+            });
+        }
+
+        // Call initializeMap when the document is ready
+        document.addEventListener('DOMContentLoaded', initializeMap);
     </script>
 }
 
@@ -213,6 +530,19 @@
         align-items: flex-start;
         margin-bottom: 20px;
         position: relative;
+        transition: background-color 0.3s ease;
+    }
+
+    .route-point.visited {
+        background-color: #e8f5e9;
+    }
+
+    .route-point.visited .point-circle {
+        background-color: #4CAF50;
+    }
+
+    .route-point.visited .route-line {
+        background-color: #4CAF50;
     }
 
     .point-circle {
@@ -258,39 +588,15 @@
         margin: 0;
     }
 
-    .marker-pin {
-        width: 30px;
-        height: 30px;
-        border-radius: 50% 50% 50% 0;
-        position: absolute;
-        transform: rotate(-45deg);
-        left: 50%;
-        top: 50%;
-        margin: -15px 0 0 -15px;
-    }
-
-    .marker-pin::after {
-        content: '';
-        width: 24px;
-        height: 24px;
-        margin: 3px 0 0 3px;
-        background: #fff;
-        position: absolute;
-        border-radius: 50%;
-    }
-
-    .custom-div-icon i {
-        position: absolute;
-        width: 22px;
-        font-size: 14px;
-        left: 4px;
-        top: 4px;
-        text-align: center;
-        transform: rotate(45deg);
+    .alert-info {
+        background-color: #f8f9fa;
+        border-color: #ddd;
+        color: #333;
+        padding: 15px;
+        margin-top: 15px;
+        border-radius: 4px;
     }
 </style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
 @{
     ViewData["Title"] = "Import Traseu";

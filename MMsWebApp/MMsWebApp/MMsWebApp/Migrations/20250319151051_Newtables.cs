@@ -30,8 +30,7 @@ namespace MMsWebApp.Migrations
                 name: "Pubele",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true)
+                    Id = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -44,7 +43,7 @@ namespace MMsWebApp.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PubelaId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PubelaId = table.Column<string>(type: "TEXT", nullable: false),
                     CetateanId = table.Column<int>(type: "INTEGER", nullable: false),
                     Adresa = table.Column<string>(type: "TEXT", nullable: false)
                 },

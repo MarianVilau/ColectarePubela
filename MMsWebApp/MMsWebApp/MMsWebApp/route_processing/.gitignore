@@ -1,0 +1,38 @@
+# Python virtual environment
+venv/
+env/
+.env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.env.example
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
+*.log
+.env
+config.ini
+
+# Mapbox API related
+mapbox_cache/
+api_responses/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# System specific
+.DS_Store
+Thumbs.db 

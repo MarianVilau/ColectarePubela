@@ -1,0 +1,166 @@
+{
+  "cluster_id": 3,
+  "name": "Zona Strada Florilor",
+  "coordinates": [
+    [
+      24.1422625,
+      45.8098778
+    ],
+    [
+      24.1425985,
+      45.8096633
+    ],
+    [
+      24.1427298,
+      45.8097794
+    ],
+    [
+      24.142635,
+      45.8100247
+    ],
+    [
+      24.142635,
+      45.8100247
+    ],
+    [
+      24.1428528,
+      45.8098787
+    ],
+    [
+      24.1427479,
+      45.8101011
+    ],
+    [
+      24.142847,
+      45.8101677
+    ],
+    [
+      24.1432736,
+      45.8101186
+    ],
+    [
+      24.143229,
+      45.8101799
+    ],
+    [
+      24.1428959,
+      45.8104018
+    ],
+    [
+      24.1428207,
+      45.8105211
+    ],
+    [
+      24.1428207,
+      45.8105211
+    ],
+    [
+      24.1425787,
+      45.8104041
+    ],
+    [
+      24.1432294,
+      45.8099795
+    ],
+    [
+      24.1433342,
+      45.810009
+    ],
+    [
+      24.1434875,
+      45.8098343
+    ],
+    [
+      24.1429643,
+      45.809151
+    ],
+    [
+      24.1427831,
+      45.8093127
+    ],
+    [
+      24.1428419,
+      45.8090261
+    ],
+    [
+      24.1423812,
+      45.8091497
+    ],
+    [
+      24.1426779,
+      45.8089591
+    ],
+    [
+      24.1421912,
+      45.8088661
+    ],
+    [
+      24.1424153,
+      45.8082876
+    ],
+    [
+      24.1419257,
+      45.8084047
+    ],
+    [
+      24.1420772,
+      45.8085317
+    ]
+  ],
+  "addresses": [
+    "Strada Crizantemelor 13, Sibiu, Romania",
+    "Strada Crizantemelor 12, Sibiu, Romania",
+    "Strada Crizantemelor 16, Sibiu, Romania",
+    "Strada Crizantemelor 17, Sibiu, Romania",
+    "Strada Crizantemelor 17, Sibiu, Romania",
+    "Strada Crizantemelor 18, Sibiu, Romania",
+    "Strada Crizantemelor 19, Sibiu, Romania",
+    "Strada Crizantemelor 21, Sibiu, Romania",
+    "Strada Lăcrămioarelor 8, Sibiu, Romania",
+    "Strada Lăcrămioarelor 10, Sibiu, Romania",
+    "Strada Lăcrămioarelor 14, Sibiu, Romania",
+    "Strada Lăcrămioarelor 16, Sibiu, Romania",
+    "Strada Lăcrămioarelor 16, Sibiu, Romania",
+    "Strada Lăcrămioarelor 1, Sibiu, Romania",
+    "Strada Lăcrămioarelor 6, Sibiu, Romania",
+    "Strada Lăcrămioarelor 4, Sibiu, Romania",
+    "Strada Lăcrămioarelor 2, Sibiu, Romania",
+    "Strada Pandurilor 14, Sibiu, Romania",
+    "Strada Pandurilor 13, Sibiu, Romania",
+    "Strada Pandurilor 12, Sibiu, Romania",
+    "Strada Pandurilor 7, Sibiu, Romania",
+    "Strada Pandurilor 10, Sibiu, Romania",
+    "Strada Pandurilor 1, Sibiu, Romania",
+    "Strada Țiglarilor 34, Sibiu, Romania",
+    "Strada Țiglarilor 45, Sibiu, Romania",
+    "Strada Țiglarilor 40, Sibiu, Romania"
+  ],
+  "ids": [
+    "1D51A2FD",
+    "CCF9DDB2",
+    "5579BC0E",
+    "B7A9FB55",
+    "E792FF75",
+    "5D9A1D84",
+    "40869FDD",
+    "5B32CDB3",
+    "2072CD84",
+    "8A76E63A",
+    "E4CEE2D8",
+    "F5F12F76",
+    "98E48586",
+    "5D4BEA20",
+    "314FA3EE",
+    "1337C778",
+    "B6D6F77E",
+    "A570F645",
+    "F97B06EE",
+    "231F0CB8",
+    "45F809F3",
+    "A8D33C4C",
+    "6891030F",
+    "01AAAF58",
+    "7EFD1863",
+    "434243D0"
+  ]
+}

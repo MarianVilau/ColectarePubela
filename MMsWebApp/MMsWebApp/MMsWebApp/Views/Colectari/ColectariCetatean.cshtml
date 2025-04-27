@@ -1,0 +1,31 @@
+﻿@model List<MMsWebApp.Models.Colectare>
+
+@{
+    ViewData["Title"] = $"Colectări pentru {ViewBag.Cetatean.Nume} {ViewBag.Cetatean.Prenume}";
+}
+
+<h2>Colectări pentru @ViewBag.Cetatean.Nume @ViewBag.Cetatean.Prenume</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Pubela ID</th>
+            <th>Adresă</th>
+            <th>Data Colectării</th>
+            <th>Coordonate</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var colectare in Model)
+        {
+                <tr>
+                    <td>@colectare.Id</td>
+                    <td>@colectare.IdPubela</td>
+                    <td>@colectare.Adresa</td>
+                    <td>@colectare.CollectedAt.ToString("dd MMM yyyy HH:mm")</td>
+                    <td>@colectare.Latitude, @colectare.Longitude</td>
+                </tr>
+        }
+    </tbody>
+</table>

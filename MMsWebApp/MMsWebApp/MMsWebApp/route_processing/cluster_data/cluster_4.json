@@ -1,0 +1,166 @@
+{
+  "cluster_id": 4,
+  "name": "Zona Strada Crizantemelor",
+  "coordinates": [
+    [
+      24.1420772,
+      45.8085317
+    ],
+    [
+      24.1414998,
+      45.8086294
+    ],
+    [
+      24.1417654,
+      45.8089549
+    ],
+    [
+      24.1414308,
+      45.8091453
+    ],
+    [
+      24.1403985,
+      45.8098714
+    ],
+    [
+      24.1342794,
+      45.81020119999999
+    ],
+    [
+      24.1342794,
+      45.81020119999999
+    ],
+    [
+      24.1342794,
+      45.81020119999999
+    ],
+    [
+      24.1391443,
+      45.8100769
+    ],
+    [
+      24.1392609,
+      45.81039560000001
+    ],
+    [
+      24.1342794,
+      45.81020119999999
+    ],
+    [
+      24.1342794,
+      45.81020119999999
+    ],
+    [
+      24.1386717,
+      45.810387
+    ],
+    [
+      24.1388166,
+      45.8103421
+    ],
+    [
+      24.1388355,
+      45.8106286
+    ],
+    [
+      24.138606,
+      45.8104083
+    ],
+    [
+      24.1388355,
+      45.8106286
+    ],
+    [
+      24.138014,
+      45.8106069
+    ],
+    [
+      24.1385323,
+      45.8107821
+    ],
+    [
+      24.138014,
+      45.8106069
+    ],
+    [
+      24.1373514,
+      45.8101655
+    ],
+    [
+      24.1371535,
+      45.8099023
+    ],
+    [
+      24.1361751,
+      45.8097855
+    ],
+    [
+      24.1377991,
+      45.8110824
+    ],
+    [
+      24.1375113,
+      45.8107768
+    ],
+    [
+      24.1370748,
+      45.8108642
+    ]
+  ],
+  "addresses": [
+    "Strada Țiglarilor 40, Sibiu, Romania",
+    "Strada Țiglarilor 51, Sibiu, Romania",
+    "Strada Țiglarilor 44, Sibiu, Romania",
+    "Strada Crizantemelor 2, Sibiu, Romania",
+    "Strada Țiglarilor 60, Sibiu, Romania",
+    "Strada Țiglari 64, Sibiu, Romania",
+    "Strada Țiglari 66, Sibiu, Romania",
+    "Strada Țiglari 66, Sibiu, Romania",
+    "Strada Țiglarilor 75, Sibiu, Romania",
+    "Strada Țiglarilor 70, Sibiu, Romania",
+    "Strada Țiglari 70, Sibiu, Romania",
+    "Strada Țiglari 70, Sibiu, Romania",
+    "Strada Țiglarilor 79, Sibiu, Romania",
+    "Strada Țiglarilor 77, Sibiu, Romania",
+    "Strada Țiglarilor 76, Sibiu, Romania",
+    "Strada Țiglarilor 81 A, Sibiu, Romania",
+    "Strada Țiglarilor 76 A, Sibiu, Romania",
+    "Strada Țiglarilor 83, Sibiu, Romania",
+    "Strada Țiglarilor 78, Sibiu, Romania",
+    "Strada Țiglarilor 83, Sibiu, Romania",
+    "Strada Dulgherilor 7, Sibiu, Romania",
+    "Strada Dulgherilor 11, Sibiu, Romania",
+    "Strada Dulgherilor 18, Sibiu, Romania",
+    "Strada Țiglarilor 84, Sibiu, Romania",
+    "Strada Țiglarilor 85, Sibiu, Romania",
+    "Strada Țiglarilor 89, Sibiu, Romania"
+  ],
+  "ids": [
+    "434243D0",
+    "F2521DE8",
+    "1E3394A0",
+    "B070A314",
+    "DEFB6579",
+    "C627D662",
+    "B2A308C8",
+    "32F77E1A",
+    "B0C30AE9",
+    "612A94B4",
+    "D20BF7E0",
+    "9EC74545",
+    "9E37E0E3",
+    "D92A966D",
+    "BEF65C9D",
+    "D2D82815",
+    "0304217A",
+    "DE429D46",
+    "3D28F2EB",
+    "378BA6C2",
+    "FD3DC61F",
+    "399258FF",
+    "7115BAB3",
+    "018B6892",
+    "30F60D5E",
+    "258083BE"
+  ]
+}

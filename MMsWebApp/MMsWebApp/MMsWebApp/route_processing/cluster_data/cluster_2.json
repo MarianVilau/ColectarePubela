@@ -1,0 +1,166 @@
+{
+  "cluster_id": 2,
+  "name": "Zona Strada Țiglarilor început",
+  "coordinates": [
+    [
+      24.1439597,
+      45.8100444
+    ],
+    [
+      24.1439105,
+      45.8101458
+    ],
+    [
+      24.1439804,
+      45.81024190000001
+    ],
+    [
+      24.1440406,
+      45.8103383
+    ],
+    [
+      24.1443445,
+      45.8104539
+    ],
+    [
+      24.1440717,
+      45.8106652
+    ],
+    [
+      24.1444876,
+      45.81052589999999
+    ],
+    [
+      24.1400801,
+      45.8093499
+    ],
+    [
+      24.1436132,
+      45.8112388
+    ],
+    [
+      24.1434601,
+      45.81117769999999
+    ],
+    [
+      24.1429387,
+      45.8108733
+    ],
+    [
+      24.1421583,
+      45.8105242
+    ],
+    [
+      24.1420264,
+      45.8106286
+    ],
+    [
+      24.141643,
+      45.810466
+    ],
+    [
+      24.1418648,
+      45.8102887
+    ],
+    [
+      24.1414783,
+      45.8103817
+    ],
+    [
+      24.1414782,
+      45.8103817
+    ],
+    [
+      24.1412992,
+      45.8101045
+    ],
+    [
+      24.1411822,
+      45.8101006
+    ],
+    [
+      24.1407476,
+      45.8101578
+    ],
+    [
+      24.1404883,
+      45.8094223
+    ],
+    [
+      24.1412038,
+      45.8093466
+    ],
+    [
+      24.1418536,
+      45.8096633
+    ],
+    [
+      24.1422,
+      45.8095071
+    ],
+    [
+      24.1424219,
+      45.8096535
+    ],
+    [
+      24.1422625,
+      45.8098778
+    ]
+  ],
+  "addresses": [
+    "Strada Eschile 37, Sibiu, Romania",
+    "Strada Eschile 39, Sibiu, Romania",
+    "Strada Eschile 41, Sibiu, Romania",
+    "Strada Eschile 43, Sibiu, Romania",
+    "Strada Eschile 36, Sibiu, Romania",
+    "Strada Eschile 49, Sibiu, Romania",
+    "Strada Eschile 40, Sibiu, Romania",
+    "Strada Traian Demetrescu 142, Sibiu, Romania",
+    "Strada Florilor 38, Sibiu, Romania",
+    "Strada Florilor 36 A, Sibiu, Romania",
+    "Strada Florilor 30, Sibiu, Romania",
+    "Strada Florilor 22, Sibiu, Romania",
+    "Strada Florilor 23, Sibiu, Romania",
+    "Strada Florilor 15, Sibiu, Romania",
+    "Strada Florilor 18, Sibiu, Romania",
+    "Strada Florilor 13, Sibiu, Romania",
+    "Strada Florilor 11, Sibiu, Romania",
+    "Strada Florilor 12, Sibiu, Romania",
+    "Strada Florilor 10, Sibiu, Romania",
+    "Strada Florilor 3, Sibiu, Romania",
+    "Strada Țiglarilor 67, Sibiu, Romania",
+    "Strada Țiglarilor 52, Sibiu, Romania",
+    "Strada Crizantemelor 7, Sibiu, Romania",
+    "Strada Crizantemelor 8, Sibiu, Romania",
+    "Strada Crizantemelor 10, Sibiu, Romania",
+    "Strada Crizantemelor 13, Sibiu, Romania"
+  ],
+  "ids": [
+    "27241585",
+    "198EBDC2",
+    "2F9A4CE2",
+    "AE02A015",
+    "A5B23578",
+    "BB94B639",
+    "87EE94B5",
+    "58899293",
+    "220D309B",
+    "BE30BB28",
+    "8AD41799",
+    "1B92528B",
+    "73751A47",
+    "360B810F",
+    "4D0E55EB",
+    "57B88F1E",
+    "F9903516",
+    "4A1444EA",
+    "6185CF4D",
+    "049EE2D3",
+    "95C2391A",
+    "743980CA",
+    "8A04F2EC",
+    "BE092C9A",
+    "44B6E194",
+    "1D51A2FD"
+  ]
+}

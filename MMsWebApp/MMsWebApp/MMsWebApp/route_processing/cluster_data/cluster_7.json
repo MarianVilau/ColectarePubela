@@ -1,0 +1,166 @@
+{
+  "cluster_id": 7,
+  "name": "Zona Strada Ulmului",
+  "coordinates": [
+    [
+      24.1379463,
+      45.8149168
+    ],
+    [
+      24.1387313,
+      45.8149631
+    ],
+    [
+      24.1385524,
+      45.8152726
+    ],
+    [
+      24.1385524,
+      45.8152726
+    ],
+    [
+      24.1390143,
+      45.8150154
+    ],
+    [
+      24.1390143,
+      45.8150154
+    ],
+    [
+      24.1392665,
+      45.814861
+    ],
+    [
+      24.1394812,
+      45.8144263
+    ],
+    [
+      24.1395127,
+      45.8147043
+    ],
+    [
+      24.1401171,
+      45.8142721
+    ],
+    [
+      24.140252,
+      45.814165
+    ],
+    [
+      24.1404883,
+      45.8136093
+    ],
+    [
+      24.1409382,
+      45.81364320000001
+    ],
+    [
+      24.1415099,
+      45.8100937
+    ],
+    [
+      24.1427125,
+      45.8119509
+    ],
+    [
+      24.1418903,
+      45.811627
+    ],
+    [
+      24.142653,
+      45.8120161
+    ],
+    [
+      24.1423498,
+      45.8121897
+    ],
+    [
+      24.1420409,
+      45.8124489
+    ],
+    [
+      24.142281,
+      45.81262
+    ],
+    [
+      24.1420858,
+      45.8128332
+    ],
+    [
+      24.1416622,
+      45.8127457
+    ],
+    [
+      24.1412345,
+      45.8130292
+    ],
+    [
+      24.1412338,
+      45.81253419999999
+    ],
+    [
+      24.1321049,
+      45.8097343
+    ],
+    [
+      24.1342794,
+      45.81020119999999
+    ]
+  ],
+  "addresses": [
+    "Strada Ulmului 56, Sibiu, Romania",
+    "Strada Ulmului 35 A, Sibiu, Romania",
+    "Strada Ulmului 50 A, Sibiu, Romania",
+    "Strada Ulmului 50 A, Sibiu, Romania",
+    "Strada Ulmului 46, Sibiu, Romania",
+    "Strada Ulmului 46, Sibiu, Romania",
+    "Strada Ulmului 44, Sibiu, Romania",
+    "Strada Ulmului 27, Sibiu, Romania",
+    "Strada Ulmului 40, Sibiu, Romania",
+    "Strada Ulmului 34, Sibiu, Romania",
+    "Strada Ulmului 32, Sibiu, Romania",
+    "Strada Ulmului 25, Sibiu, Romania",
+    "Strada Ulmului 28, Sibiu, Romania",
+    "Strada Florilor 12 A, Sibiu, Romania",
+    "Strada Ulmului 1, Sibiu, Romania",
+    "Strada Ulmului 5, Sibiu, Romania",
+    "Strada Ulmului 3, Sibiu, Romania",
+    "Strada Ulmului 9, Sibiu, Romania",
+    "Strada Ulmului 15, Sibiu, Romania",
+    "Strada Ulmului 14, Sibiu, Romania",
+    "Strada Ulmului 18, Sibiu, Romania",
+    "Strada Ulmului 21, Sibiu, Romania",
+    "Strada Record 37, Sibiu, Romania",
+    "Strada Record 26, Sibiu, Romania",
+    "Strada Lacul lui Binder 4, Sibiu, Romania",
+    "Strada Țiglari 101, Sibiu, Romania"
+  ],
+  "ids": [
+    "C437BB65",
+    "856ED5AA",
+    "E3AE256B",
+    "34A10FDE",
+    "674C86C9",
+    "2F23FAD7",
+    "806ADD91",
+    "8EE4CC60",
+    "C174D020",
+    "0C0D9A76",
+    "880DBDD0",
+    "BFC023AC",
+    "5A42AB29",
+    "062C1BD8",
+    "ED0BA4D3",
+    "2A6E466C",
+    "24E89AA3",
+    "475A6169",
+    "E0D8BA65",
+    "493F7000",
+    "50A71A7E",
+    "A135751C",
+    "66010082",
+    "9AF0427D",
+    "9D898B8B",
+    "9AA4AE07"
+  ]
+}
