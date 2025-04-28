@@ -4,6 +4,9 @@ using MMsWebApp.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurarea Kestrel să asculte pe toate interfețele, doar pe HTTP (fără HTTPS)
+builder.WebHost.UseUrls("http://0.0.0.0:5138");
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
@@ -16,7 +19,8 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // Comentăm UseHsts pentru a nu forța HTTPS
+    // app.UseHsts();
 }
 
 // Adăugăm header-ul CSP
@@ -33,7 +37,8 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseHttpsRedirection();
+// Comentăm redirectarea la HTTPS
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
