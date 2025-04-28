@@ -247,7 +247,19 @@ public:
         // Check WiFi connection
         if (!isConnected()) {
             Serial.println("WiFi not connected!");
-            return false;
+            
+            // Store data offline
+            for (int i = 0; i < MAX_OFFLINE_TAGS; i++) {
+                if (!offlineTags[i].valid) {
+                    offlineTags[i].tagId = tagId;
+                    offlineTags[i].timestamp = timestamp;
+                    offlineTags[i].valid = true;
+                    Serial.println("Tag data stored offline.");
+                    return false;
+                }
+            }
+            
+            Serial.println("Offline storage is full. Data not stored.");
         }
 
         // Prepare JSON data
