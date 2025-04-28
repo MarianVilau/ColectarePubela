@@ -17,28 +17,30 @@
 // Max number of retry attempts and delay between retries
 #define MAX_RETRY_ATTEMPTS 3
 #define RETRY_DELAY_MS 2000
-#define MAX_OFFLINE_TAGS 20 // Numărul maxim de tag-uri ce pot fi stocate în memoria flash
+#define MAX_OFFLINE_TAGS 20 // Maximum number of tags that can be stored in memory
 
-// Structura pentru stocarea datelor de tag offline
+/**
+ * @brief Structure for storing offline tag data
+ */
 struct TagData {
-    String tagId;
-    String timestamp;
-    bool valid; // Flag pentru a indica dacă locația conține date valide
+    String tagId;      ///< The RFID tag identifier
+    String timestamp;  ///< The timestamp when the tag was read
+    bool valid;        ///< Flag indicating if this slot contains valid data
 };
 
 class ApiClient {
 private:
     WiFiClient client; ///< WiFi client for HTTP communication
     NTPClient ntpClient; ///< NTP client for time synchronization
-    TagData offlineTags[MAX_OFFLINE_TAGS]; ///< Array pentru stocarea tag-urilor offline
-    int offlineTagCount = 0; ///< Numărul actual de tag-uri stocate offline
+    TagData offlineTags[MAX_OFFLINE_TAGS]; ///< Array for storing offline tags
+    int offlineTagCount = 0; ///< Current number of stored offline tags
 
 public:
     /**
      * @brief Constructor for the ApiClient class.
      */
     ApiClient() {
-        // Inițializează array-ul de tag-uri offline
+        // Initialize offline tags array
         for (int i = 0; i < MAX_OFFLINE_TAGS; i++) {
             offlineTags[i].valid = false;
         }
@@ -98,7 +100,7 @@ public:
             return false;
         }
         
-        // Găsește primul loc disponibil în array
+        // Find first available slot in the array
         for (int i = 0; i < MAX_OFFLINE_TAGS; i++) {
             if (!offlineTags[i].valid) {
                 offlineTags[i].tagId = tagId;
@@ -106,8 +108,8 @@ public:
                 offlineTags[i].valid = true;
                 offlineTagCount++;
                 
-                Serial.println("Tag stocat offline: " + tagId);
-                Serial.println("Total tag-uri offline: " + String(offlineTagCount));
+                Serial.println("Tag stored offline: " + tagId);
+                Serial.println("Total offline tags: " + String(offlineTagCount));
                 return true;
             }
         }
@@ -121,7 +123,7 @@ public:
      */
     int sendOfflineTags() {
         if (!isConnected()) {
-            Serial.println("WiFi nu este conectat, nu se pot trimite tag-urile offline");
+            Serial.println("WiFi not connected, cannot send offline tags");
             return 0;
         }
         
@@ -130,25 +132,25 @@ public:
         for (int i = 0; i < MAX_OFFLINE_TAGS; i++) {
             if (offlineTags[i].valid) {
                 if (sendTagData(offlineTags[i].tagId, offlineTags[i].timestamp)) {
-                    // Eliberează locul după o trimitere reușită
+                    // Free slot after successful send
                     offlineTags[i].valid = false;
                     offlineTagCount--;
                     sentCount++;
                     
-                    Serial.println("Tag offline trimis cu succes: " + offlineTags[i].tagId);
+                    Serial.println("Offline tag sent successfully: " + offlineTags[i].tagId);
                     
-                    // Mică pauză între trimiteri pentru a evita suprasolicitarea API-ului
+                    // Small delay between sends to avoid overwhelming the API
                     delay(500);
                 } else {
-                    // Dacă nu s-a reușit trimiterea, oprim procesul pentru a încerca din nou mai târziu
-                    Serial.println("Eroare la trimiterea tag-ului offline, se va încerca din nou mai târziu");
+                    // If sending fails, stop the process to try again later
+                    Serial.println("Error sending offline tag, will try again later");
                     break;
                 }
             }
         }
         
-        Serial.println("Tag-uri offline trimise: " + String(sentCount));
-        Serial.println("Tag-uri offline rămase: " + String(offlineTagCount));
+        Serial.println("Offline tags sent: " + String(sentCount));
+        Serial.println("Offline tags remaining: " + String(offlineTagCount));
         
         return sentCount;
     }
@@ -185,62 +187,64 @@ public:
         String jsonString;
         serializeJson(jsonDoc, jsonString);
         
-        // Încercare inițială + reîncercări în caz de eșec
+        // Initial attempt + retries in case of failure
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             HTTPClient http;
             
             String serverPath = String(API_ENDPOINT);
-            Serial.print("Încercarea #");
+            Serial.print("Attempt #");
             Serial.print(attempt);
-            Serial.print(" - Conectare la API: ");
+            Serial.print(" - Connecting to API: ");
             Serial.println(serverPath);
 
             if (!http.begin(client, serverPath)) {
-                Serial.println("Eșec la conectarea la endpoint-ul API");
+                Serial.println("Failed to connect to API endpoint");
                 delay(retryDelay);
-                continue; // Treci la următoarea încercare
+                continue; // Move to next attempt
             }
             
             http.addHeader("Content-Type", "application/json");
-            Serial.println("Conectat la API");
-            Serial.println("JSON document creat");
-            Serial.println("JSON serializat: " + jsonString);
+            Serial.println("Connected to API");
+            Serial.println("JSON document created");
+            Serial.println("JSON serialized: " + jsonString);
 
-            // Trimite cererea POST
+            // Send POST request
             int httpResponseCode = http.POST(jsonString);
-            Serial.println("Cerere POST trimisă");
+            Serial.println("POST request sent");
 
             if (httpResponseCode > 0) {
                 String response = http.getString();
-                Serial.println("Cod de răspuns HTTP: " + String(httpResponseCode));
-                Serial.println("Răspuns: " + response);
+                Serial.println("HTTP response code: " + String(httpResponseCode));
+                Serial.println("Response: " + response);
                 http.end();
-                return true; // Succes, ieșim din buclă
+                return true; // Success, exit loop
             } else {
-                Serial.println("Eroare la trimiterea POST (Încercarea #" + String(attempt) + "): " + String(httpResponseCode));
-                Serial.println("Mesaj de eroare (Încercarea #" + String(attempt) + "): " + http.errorToString(httpResponseCode));
+                Serial.println("Error sending POST (Attempt #" + String(attempt) + "): " + String(httpResponseCode));
+                Serial.println("Error message (Attempt #" + String(attempt) + "): " + http.errorToString(httpResponseCode));
                 http.end();
                 
                 if (attempt < maxRetries) {
-                    Serial.print("Se reîncearcă în ");
+                    Serial.print("Retrying in ");
                     Serial.print(retryDelay / 1000.0);
-                    Serial.println(" secunde...");
+                    Serial.println(" seconds...");
                     delay(retryDelay);
                 } else {
-                    Serial.println("S-au epuizat toate încercările. Eșec la trimiterea datelor.");
-                    // Dacă toate încercările eșuează, stocăm tag-ul pentru trimitere ulterioară
+                    Serial.println("All attempts exhausted. Failed to send data.");
+                    // If all attempts fail, store the tag for later sending
                     return storeOfflineTag(tagId);
                 }
             }
         }
         
-        return false; // Toate încercările au eșuat
+        return false; // All attempts failed
     }
 
     /**
      * @brief Send RFID tag data with specific timestamp to the API endpoint.
      * @param tagId The ID of the RFID tag to send.
      * @param timestamp The timestamp when the tag was collected.
+     * @param maxRetries Maximum number of retry attempts (default: MAX_RETRY_ATTEMPTS).
+     * @param retryDelay Delay between retry attempts in milliseconds (default: RETRY_DELAY_MS).
      * @return True if the data was sent successfully, false otherwise.
      */
     bool sendTagData(const String &tagId, const String &timestamp, int maxRetries = MAX_RETRY_ATTEMPTS, int retryDelay = RETRY_DELAY_MS) {
@@ -259,53 +263,53 @@ public:
         String jsonString;
         serializeJson(jsonDoc, jsonString);
         
-        // Încercare inițială + reîncercări în caz de eșec
+        // Initial attempt + retries in case of failure
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             HTTPClient http;
             
             String serverPath = String(API_ENDPOINT);
-            Serial.print("Încercarea #");
+            Serial.print("Attempt #");
             Serial.print(attempt);
-            Serial.print(" - Conectare la API: ");
+            Serial.print(" - Connecting to API: ");
             Serial.println(serverPath);
 
             if (!http.begin(client, serverPath)) {
-                Serial.println("Eșec la conectarea la endpoint-ul API");
+                Serial.println("Failed to connect to API endpoint");
                 delay(retryDelay);
-                continue; // Treci la următoarea încercare
+                continue; // Move to next attempt
             }
             
             http.addHeader("Content-Type", "application/json");
-            Serial.println("Conectat la API");
-            Serial.println("JSON serializat: " + jsonString);
+            Serial.println("Connected to API");
+            Serial.println("JSON serialized: " + jsonString);
 
-            // Trimite cererea POST
+            // Send POST request
             int httpResponseCode = http.POST(jsonString);
-            Serial.println("Cerere POST trimisă");
+            Serial.println("POST request sent");
 
             if (httpResponseCode > 0) {
                 String response = http.getString();
-                Serial.println("Cod de răspuns HTTP: " + String(httpResponseCode));
-                Serial.println("Răspuns: " + response);
+                Serial.println("HTTP response code: " + String(httpResponseCode));
+                Serial.println("Response: " + response);
                 http.end();
-                return true; // Succes, ieșim din buclă
+                return true; // Success, exit loop
             } else {
-                Serial.println("Eroare la trimiterea POST (Încercarea #" + String(attempt) + "): " + String(httpResponseCode));
-                Serial.println("Mesaj de eroare (Încercarea #" + String(attempt) + "): " + http.errorToString(httpResponseCode));
+                Serial.println("Error sending POST (Attempt #" + String(attempt) + "): " + String(httpResponseCode));
+                Serial.println("Error message (Attempt #" + String(attempt) + "): " + http.errorToString(httpResponseCode));
                 http.end();
                 
                 if (attempt < maxRetries) {
-                    Serial.print("Se reîncearcă în ");
+                    Serial.print("Retrying in ");
                     Serial.print(retryDelay / 1000.0);
-                    Serial.println(" secunde...");
+                    Serial.println(" seconds...");
                     delay(retryDelay);
                 } else {
-                    Serial.println("S-au epuizat toate încercările. Eșec la trimiterea datelor.");
+                    Serial.println("All attempts exhausted. Failed to send data.");
                 }
             }
         }
         
-        return false; // Toate încercările au eșuat
+        return false; // All attempts failed
     }
 };
 
