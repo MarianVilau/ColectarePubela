@@ -127,8 +127,8 @@ public:
                 http.end();
                 return true; // Succes, ieșim din buclă
             } else {
-                Serial.println("Eroare la trimiterea POST: " + String(httpResponseCode));
-                Serial.println("Mesaj de eroare: " + http.errorToString(httpResponseCode));
+                Serial.println("Eroare la trimiterea POST (Încercarea #" + String(attempt) + "): " + String(httpResponseCode));
+                Serial.println("Mesaj de eroare (Încercarea #" + String(attempt) + "): " + http.errorToString(httpResponseCode));
                 http.end();
                 
                 if (attempt < maxRetries) {
