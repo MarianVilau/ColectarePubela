@@ -133,12 +133,18 @@ namespace MMsWebApp.Controllers
                             return Json(new { success = false, message = "Formatul matricei de distanțe este invalid! Lipsește proprietatea 'distances'." });
                         }
 
+                        if (!root.TryGetProperty("durations", out var durations))
+                        {
+                            return Json(new { success = false, message = "Formatul matricei de distanțe este invalid! Lipsește proprietatea 'durations'." });
+                        }
+
                         if (distances.ValueKind != JsonValueKind.Array)
                         {
                             return Json(new { success = false, message = "Formatul matricei de distanțe este invalid! Proprietatea 'distances' nu este un array." });
                         }
 
                         var distanceMatrix = new List<List<int>>();
+                        var durationMatrix = new List<List<int>>();
                         var rowCount = 0;
                         foreach (var row in distances.EnumerateArray())
                         {
@@ -162,6 +168,28 @@ namespace MMsWebApp.Controllers
                                 }
                             }
                             distanceMatrix.Add(distanceRow);
+                            rowCount++;
+                        }
+
+                        // Citim matricea de durată
+                        rowCount = 0;
+                        foreach (var row in durations.EnumerateArray())
+                        {
+                            var durationRow = new List<int>();
+                            var colCount = 0;
+                            foreach (var cell in row.EnumerateArray())
+                            {
+                                try
+                                {
+                                    durationRow.Add((int)Math.Round(cell.GetDouble()));
+                                    colCount++;
+                                }
+                                catch (Exception ex)
+                                {
+                                    return Json(new { success = false, message = $"Eroare la citirea duratei [{rowCount},{colCount}]: {ex.Message}" });
+                                }
+                            }
+                            durationMatrix.Add(durationRow);
                             rowCount++;
                         }
 
@@ -194,8 +222,15 @@ namespace MMsWebApp.Controllers
 
                         // Calculate distances
                         var originalDistance = CalculateTotalMatrixDistance(points.Count, distanceMatrix);
+                        var originalDuration = CalculateTotalMatrixDuration(points.Count, durationMatrix);
+                        var originalDurationTimeSpan = TimeSpan.FromSeconds(originalDuration);
+                        
                         var optimizedDistance = totalDistance / 1000.0; // Convert to kilometers
                         var distanceDifference = originalDistance - optimizedDistance;
+                        var distanceReduction = originalDistance > 0 ? (distanceDifference / originalDistance) * 100 : 0;
+                        
+                        var durationDifference = originalDuration - totalDuration;
+                        var durationReduction = originalDuration > 0 ? (durationDifference / originalDuration) * 100 : 0;
                         var estimatedDuration = TimeSpan.FromSeconds(totalDuration);
 
                         return Json(new
@@ -205,7 +240,11 @@ namespace MMsWebApp.Controllers
                             originalDistance,
                             optimizedDistance,
                             distanceDifference,
-                            estimatedDuration = estimatedDuration.ToString(@"hh\:mm\:ss")
+                            distanceReduction = Math.Round(distanceReduction, 2),
+                            originalDuration = originalDurationTimeSpan.ToString(@"hh\:mm\:ss"),
+                            estimatedDuration = estimatedDuration.ToString(@"hh\:mm\:ss"),
+                            durationDifference = TimeSpan.FromSeconds(durationDifference).ToString(@"hh\:mm\:ss"),
+                            durationReduction = Math.Round(durationReduction, 2)
                         });
                     }
                 }
@@ -302,6 +341,49 @@ namespace MMsWebApp.Controllers
             }
 
             return totalDistance / 1000.0; // Convert to kilometers
+        }
+
+        private double CalculateTotalMatrixDuration(int pointCount, List<List<int>>? durationMatrix)
+        {
+            if (durationMatrix == null || pointCount < 2) return 0;
+            
+            double totalDuration = 0;
+            try
+            {
+                // Add duration from start point (index 0) to first collection point
+                var startDuration = durationMatrix[0][1];
+                Console.WriteLine($"Durată originală start -> primul punct: {startDuration} secunde");
+                totalDuration += startDuration;
+
+                // Add durations between collection points plus collection time
+                for (int i = 1; i < pointCount - 1; i++)
+                {
+                    if (i + 1 < durationMatrix[i].Count)
+                    {
+                        var duration = durationMatrix[i][i + 1];
+                        Console.WriteLine($"Durată originală punct {i} -> punct {i+1}: {duration} secunde");
+                        totalDuration += duration;
+                        
+                        // Adăugăm 30 secunde pentru fiecare colectare
+                        totalDuration += 30;
+                        Console.WriteLine($"Adăugare timp colectare la punctul {i}: 30 secunde");
+                    }
+                }
+
+                // Add duration from last collection point to end point
+                var endDuration = durationMatrix[pointCount - 1][durationMatrix.Count - 1];
+                Console.WriteLine($"Durată originală ultimul punct -> final: {endDuration} secunde");
+                totalDuration += endDuration;
+
+                Console.WriteLine($"Durată totală originală calculată: {totalDuration} secunde = {TimeSpan.FromSeconds(totalDuration)}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating duration: {ex.Message}");
+                return 0;
+            }
+
+            return totalDuration;
         }
 
         private async Task<List<TraseuPoint>> GetPointsFromCsv(string filePath)

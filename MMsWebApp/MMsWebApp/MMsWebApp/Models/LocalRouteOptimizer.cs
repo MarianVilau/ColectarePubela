@@ -13,7 +13,7 @@ namespace MMsWebApp.Models
         private readonly int[,] distanceMatrix;
         private readonly int[,] durationMatrix;
         private readonly IHubContext<RouteHub> _hubContext;
-        private readonly Random random = new Random();
+        private readonly Random random = new Random(42);
         
         // Parametri pentru algoritmul genetic
         /// <summary>Dimensiunea populației în algoritmul genetic</summary>

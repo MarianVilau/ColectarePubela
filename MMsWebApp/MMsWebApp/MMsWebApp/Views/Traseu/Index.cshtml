@@ -72,9 +72,10 @@
                         <div class="col-md-3">
                             <div class="card bg-warning text-dark">
                                 <div class="card-body">
-                                    <h5 class="card-title">Distanță Optimizată</h5>
-                                    <p id="optimizedDistance" class="card-text display-6">0.00 km</p>
-                                    <small class="text-muted" id="distanceDifference"></small>
+                                    <h5 class="card-title">Distanță</h5>
+                                    <p id="originalDistance" class="card-text">Inițială: <span class="fw-bold">0.00 km</span></p>
+                                    <p id="optimizedDistance" class="card-text">Optimizată: <span class="fw-bold">0.00 km</span></p>
+                                    <p id="distanceDifference" class="card-text">Economie: <span class="fw-bold">0.00 km</span> (<span id="distanceReduction">0</span>%)</p>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +83,9 @@
                             <div class="card bg-info text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Durată Estimată</h5>
-                                    <p id="estimatedDuration" class="card-text display-6">00:00:00</p>
+                                    <p id="originalDuration" class="card-text">Inițială: <span class="fw-bold">00:00:00</span></p>
+                                    <p id="estimatedDuration" class="card-text">Optimizată: <span class="fw-bold">00:00:00</span></p>
+                                    <p id="durationDifference" class="card-text">Economie: <span class="fw-bold">00:00:00</span> (<span id="durationReduction">0</span>%)</p>
                                 </div>
                             </div>
                         </div>
@@ -475,10 +478,18 @@
             .then(data => {
                 if (data.success) {
                     displayOptimizedRoute(data.optimizedRoute);
-                    document.getElementById('optimizedDistance').textContent = data.optimizedDistance.toFixed(2) + ' km';
-                    document.getElementById('distanceDifference').textContent = 
-                        `Reducere: ${data.distanceDifference.toFixed(2)} km`;
-                    document.getElementById('estimatedDuration').textContent = data.estimatedDuration;
+                    
+                    // Actualizăm informațiile despre distanță
+                    document.querySelector('#originalDistance span').textContent = data.originalDistance.toFixed(2) + ' km';
+                    document.querySelector('#optimizedDistance span').textContent = data.optimizedDistance.toFixed(2) + ' km';
+                    document.querySelector('#distanceDifference span').textContent = data.distanceDifference.toFixed(2) + ' km';
+                    document.getElementById('distanceReduction').textContent = data.distanceReduction;
+                    
+                    // Actualizăm informațiile despre durată
+                    document.querySelector('#originalDuration span').textContent = data.originalDuration;
+                    document.querySelector('#estimatedDuration span').textContent = data.estimatedDuration;
+                    document.querySelector('#durationDifference span').textContent = data.durationDifference;
+                    document.getElementById('durationReduction').textContent = data.durationReduction;
                     
                     // Update route list
                     var routeContainer = document.querySelector('.route-container');
