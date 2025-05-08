@@ -4,20 +4,35 @@ using System.Text.Json;
 
 namespace MMsWebApp.Models
 {
+    /// <summary>
+    /// Optimizator de traseu care utilizează un algoritm genetic pentru a găsi trasee optime între puncte.
+    /// Folosește matrici de distanță și durată pentru a calcula cea mai eficientă rută de colectare.
+    /// </summary>
     public class LocalRouteOptimizer
     {
         private readonly int[,] distanceMatrix;
         private readonly int[,] durationMatrix;
         private readonly IHubContext<RouteHub> _hubContext;
-        private readonly Random random = new Random();
+        private readonly Random random = new Random(42);
         
         // Parametri pentru algoritmul genetic
+        /// <summary>Dimensiunea populației în algoritmul genetic</summary>
         private const int POPULATION_SIZE = 100;
+        /// <summary>Numărul maxim de generații pentru evoluția algoritmului</summary>
         private const int MAX_GENERATIONS = 100;
+        /// <summary>Rata de mutație pentru diversificarea genetică</summary>
         private const double MUTATION_RATE = 0.015;
+        /// <summary>Dimensiunea turneului pentru selecția părinților</summary>
         private const int TOURNAMENT_SIZE = 5;
+        /// <summary>Numărul de soluții de elită care sunt păstrate între generații</summary>
         private const int ELITE_SIZE = 10;
 
+        /// <summary>
+        /// Inițializează un nou optimizator de traseu cu matricile de distanță și durată.
+        /// </summary>
+        /// <param name="matrixFilePath">Calea către fișierul JSON ce conține matricile de distanță și durată</param>
+        /// <param name="hubContext">Contextul hub-ului SignalR pentru trimiterea actualizărilor în timp real</param>
+        /// <exception cref="InvalidOperationException">Aruncată când matricea este goală sau nu este pătrată</exception>
         public LocalRouteOptimizer(string matrixFilePath, IHubContext<RouteHub> hubContext)
         {
             _hubContext = hubContext;
@@ -61,6 +76,11 @@ namespace MMsWebApp.Models
             }
         }
 
+        /// <summary>
+        /// Încarcă datele din elementele JSON în matricile de distanță și durată.
+        /// </summary>
+        /// <param name="distances">Element JSON care conține matricea de distanțe</param>
+        /// <param name="durations">Element JSON care conține matricea de durate</param>
         private void LoadMatrixData(JsonElement distances, JsonElement durations)
         {
             var rowIndex = 0;
@@ -88,6 +108,15 @@ namespace MMsWebApp.Models
             }
         }
 
+        /// <summary>
+        /// Optimizează traseul folosind un algoritm genetic.
+        /// </summary>
+        /// <returns>
+        /// Un tuplu care conține:
+        /// - Traseul optimizat ca o listă de indici
+        /// - Distanța totală a traseului (în metri)
+        /// - Durata totală a traseului (în secunde)
+        /// </returns>
         public async Task<(List<int> Route, double TotalDistance, double TotalDuration)> OptimizeRoute()
         {
             try
@@ -163,6 +192,11 @@ namespace MMsWebApp.Models
             }
         }
 
+        /// <summary>
+        /// Inițializează populația inițială cu trasee aleatorii.
+        /// </summary>
+        /// <param name="size">Dimensiunea traseului (numărul de puncte)</param>
+        /// <returns>O listă de trasee aleatorii care formează populația inițială</returns>
         private List<List<int>> InitializePopulation(int size)
         {
             var population = new List<List<int>>();
@@ -183,6 +217,11 @@ namespace MMsWebApp.Models
             return population;
         }
 
+        /// <summary>
+        /// Calculează distanța totală a unui traseu.
+        /// </summary>
+        /// <param name="route">Traseul pentru care se calculează distanța</param>
+        /// <returns>Distanța totală a traseului în metri</returns>
         private double CalculateDistance(List<int> route)
         {
             double distance = 0;
@@ -191,6 +230,11 @@ namespace MMsWebApp.Models
             return distance;
         }
 
+        /// <summary>
+        /// Calculează durata totală a unui traseu, inclusiv timpul de colectare.
+        /// </summary>
+        /// <param name="route">Traseul pentru care se calculează durata</param>
+        /// <returns>Durata totală a traseului în secunde, inclusiv timpii de colectare</returns>
         private double CalculateDuration(List<int> route)
         {
             double duration = 0;
@@ -203,6 +247,15 @@ namespace MMsWebApp.Models
             return duration;
         }
 
+        /// <summary>
+        /// Selectează un traseu din populație folosind metoda turneului.
+        /// </summary>
+        /// <param name="population">Populația din care se selectează</param>
+        /// <returns>Traseul selectat</returns>
+        /// <remarks>
+        /// Metoda turneului selectează aleatoriu un subset din populație 
+        /// și alege cel mai bun traseu din acest subset.
+        /// </remarks>
         private List<int> TournamentSelection(List<List<int>> population)
         {
             var tournament = new List<List<int>>();
@@ -216,6 +269,15 @@ namespace MMsWebApp.Models
             return new List<int>(tournament[0]);
         }
 
+        /// <summary>
+        /// Realizează încrucișarea (crossover) între doi părinți pentru a genera doi copii.
+        /// </summary>
+        /// <param name="parent1">Primul părinte</param>
+        /// <param name="parent2">Al doilea părinte</param>
+        /// <returns>Doi copii rezultați din încrucișare</returns>
+        /// <remarks>
+        /// Folosește metoda de încrucișare cu două puncte, păstrând punctele de start și stop fixe.
+        /// </remarks>
         private (List<int>, List<int>) CrossOver(List<int> parent1, List<int> parent2)
         {
             var size = parent1.Count;
@@ -231,6 +293,15 @@ namespace MMsWebApp.Models
             return (child1, child2);
         }
 
+        /// <summary>
+        /// Creează un copil din doi părinți folosind secvența de la point1 la point2 din primul părinte
+        /// și restul genelor din al doilea părinte.
+        /// </summary>
+        /// <param name="parent1">Părintele care contribuie cu segmentul specificat</param>
+        /// <param name="parent2">Părintele care contribuie cu restul genelor</param>
+        /// <param name="point1">Punctul de start al segmentului</param>
+        /// <param name="point2">Punctul de sfârșit al segmentului</param>
+        /// <returns>Un nou traseu (copil) rezultat din încrucișare</returns>
         private List<int> CreateChild(List<int> parent1, List<int> parent2, int point1, int point2)
         {
             var size = parent1.Count;
@@ -259,6 +330,14 @@ namespace MMsWebApp.Models
             return child;
         }
 
+        /// <summary>
+        /// Aplică operația de mutație la un traseu, cu o probabilitate dată de MUTATION_RATE.
+        /// </summary>
+        /// <param name="route">Traseul asupra căruia se aplică mutația</param>
+        /// <remarks>
+        /// Mutația constă în schimbarea poziției a două puncte aleatoare din traseu,
+        /// excluzând punctele de start și stop care rămân fixe.
+        /// </remarks>
         private void Mutate(List<int> route)
         {
             if (random.NextDouble() < MUTATION_RATE)

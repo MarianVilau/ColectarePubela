@@ -6,10 +6,17 @@
 RfidReader rfidReader;
 ApiClient apiClient;
 
-// Timer for resetting last tag
+// Timer variables
 unsigned long lastTagResetTime = 0;
 const unsigned long TAG_RESET_INTERVAL = 10000; // 10 seconds
 
+// Timer for checking and sending offline tags
+unsigned long lastOfflineCheckTime = 0;
+const unsigned long OFFLINE_CHECK_INTERVAL = 30000; // 30 seconds
+
+/**
+ * @brief Setup function - called once at startup
+ */
 void setup() {
   // Initialize serial communication
   Serial.begin(SERIAL_BAUD_RATE);
@@ -26,6 +33,9 @@ void setup() {
   rfidReader.begin();
 }
 
+/**
+ * @brief Main loop function - runs continuously
+ */
 void loop() {
   // Try to reconnect if WiFi connection is lost
   if (!apiClient.isConnected()) {
@@ -49,6 +59,29 @@ void loop() {
   if (millis() - lastTagResetTime > TAG_RESET_INTERVAL) {
     rfidReader.resetLastTag();
     lastTagResetTime = millis();
+  }
+  
+  // Check and send stored offline tags if internet connection is available
+  if (millis() - lastOfflineCheckTime > OFFLINE_CHECK_INTERVAL) {
+    lastOfflineCheckTime = millis();
+    
+    // Display number of stored offline tags
+    int offlineCount = apiClient.getOfflineTagCount();
+    if (offlineCount > 0) {
+      Serial.println("Stored offline tags: " + String(offlineCount));
+    }
+    
+    // If there are offline tags and internet connection is available, try to send them
+    if (offlineCount > 0 && apiClient.isConnected()) {
+      Serial.println("Attempting to send offline tags...");
+      int sentCount = apiClient.sendOfflineTags();
+      
+      if (sentCount > 0) {
+        Serial.println("Sent " + String(sentCount) + " offline tags");
+      } else {
+        Serial.println("Could not send any offline tags");
+      }
+    }
   }
   
   // Short delay before next read
